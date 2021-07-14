@@ -1,0 +1,68 @@
+/* 노멀라이징 */
+body, ul, li{ 
+    margin:0; 
+    list-style:none; 
+    padding:0; 
+} 
+a{ 
+    text-decoration:none; 
+    color:inherit; 
+}
+
+/* 커스터마이징 */
+.main_section{
+    text-align: center;
+}
+.uploader_body{
+    display: inline-block;
+    height: 300px;
+    width: 70%;
+    border: solid black 3px;
+    border-radius: 5px;
+}
+.top_area{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 30px;
+}
+.upload_area{
+    height: 206px;
+    width: 100%;
+    text-align: left;  
+    border-top: solid rgb(167, 167, 167) 2px;
+    border-bottom: solid rgb(167, 167, 167) 2px;
+}
+.uploadZone{
+	height: 100%;
+	border: 2px solid;
+	z-index: 500;
+}
+
+.info_area{
+    height: 29px;
+    border-bottom: solid rgb(167, 167, 167) 1px;
+}
+.info_area > ul{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 13px;
+}
+.btn_area{
+    height: 30px;
+    text-align: left;
+}
+
+
+.uploaded_body{
+    display: inline-block;
+    height: 300px;
+    width: 70%;
+    border: solid black 3px;
+    border-radius: 5px;
+}
+.uploaded_frame{
+	height: 100%;
+    width: 100%;
+}
