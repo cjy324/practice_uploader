@@ -76,5 +76,5 @@ public abstract class DispatcherServlet extends HttpServlet {
 		return rs;
 	}
 
-	protected abstract String doAction(HttpServletRequest request, HttpServletResponse response, String controllerName);
+	protected abstract String doAction(HttpServletRequest request, HttpServletResponse response, String controllerName) throws IOException;
 }

@@ -205,8 +205,15 @@
 	    		for(let k = 0; k < slicedFiles.length; k++){
 	    			// 각 file을 formData 객체에 담기
 			        formData.append("slicedFiles", slicedFiles[k]);
+			        
+	    			let params = "&guid= "+ guid;
+				        params += "&size="+ newFileList[i].size;
+				        params += "&type="+ newFileList[i].type;
+				        params += "&index="+ k;
+				        params += "&length=" + slicedFiles.length;
+	    			
 			     	// http 요청 타입 / 주소 / 동기식 여부 설정
-				    xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=true&guid="+ guid + "&size="+ newFileList[i].size + "&length=" + slicedFiles.length, false); // 메서드와 주소 설정
+				    xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=true" + params, false); // 메서드와 주소 설정
 				    // http 요청
 				    xhttp.send(formData);   // 요청 전송(formData 전송)
 
