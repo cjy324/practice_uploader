@@ -173,6 +173,16 @@
 	    		console.log(slicedFilesNum);
 	    		console.log(limitSize);
 	    		
+	    		// 2자리 수로 만드는 함수
+	    		function numFormat(num) {
+	    			num = Number(num).toString(); 
+	    			if(Number(num) < 10 && num.length == 1){
+	    				num = "0" + num;
+	    			}
+	    			return num; 
+	    		}
+
+	    		
 	    		// 분할
 	    		for(let f = 0; f < slicedFilesNum; f++){
 	    			// 각 분할 횟수별 분할 시작 포인트 설정
@@ -203,10 +213,12 @@
 	    		const guid = createGuid();
 	    		
 	    		for(let k = 0; k < slicedFiles.length; k++){
+	    			// 분할 파일별 이름을 설정
+	    			slicedFiles[k].name = "temp." + numFormat(k);
 	    			// 각 file을 formData 객체에 담기
 			        formData.append("slicedFiles", slicedFiles[k]);
 			        
-	    			let params = "&guid= "+ guid;
+	    			let params = "&guid="+ guid;
 				        params += "&size="+ newFileList[i].size;
 				        params += "&type="+ newFileList[i].type;
 				        params += "&index="+ k;
