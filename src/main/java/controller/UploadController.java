@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -90,9 +91,9 @@ public class UploadController {
 			
 				System.out.println("newFile : " + newFile.getName());
 			
-				FileReader fr = new FileReader(newFile);
+				FileInputStream fr = new FileInputStream(newFile);
 				int read;
-				char[] buffer = new char[100];
+				byte[] buffer = new byte[1024]; // 파일 내용을 담을 버퍼(?) 선언
 				String stringData = null;
 				StringBuilder data = new StringBuilder();
 				while((read = fr.read(buffer)) != -1) {
@@ -104,36 +105,30 @@ public class UploadController {
 				
 				// read/write 랜덤 액세스 파일 열기
 				RandomAccessFile raf = new RandomAccessFile(temp, "rw"); 
-						
-//				int seekSize = data.length(); // 읽어들일 사이즈 byte
-//				System.out.println("seekSize : " + seekSize);			
-//				// 전체 문자열을 출력
-//				String line = "";
-//				while ((line = raf.readLine()) != null) {
-//					System.out.println(line);			
-//				}
-//				// 문자열 총 길이
-//				System.out.println("total length : " + raf.length()+"\n");
-//		 
-//				byte[] bytes = data.toString().getBytes();
-//				System.out.println("bytes.length : " + bytes.length);
 				
 				long seekPoint = 0;
 				
+				// 임시 txt파일에 저장해둔 seekPoint 값 가져오기
 				if(tempPathTxt.exists()) {
-					String test = Files.readString(tempPathTxt.toPath());
-					seekPoint = Long.parseLong(test);
+//					String test = Files.readString(tempPathTxt.toPath());
+					String getSeekPoint = "";
+					BufferedReader br = new BufferedReader(new FileReader(tempPathTxt));
+					
+					while((getSeekPoint = br.readLine()) != null) {
+						seekPoint = Long.parseLong(getSeekPoint);
+					}
+					br.close();
 				}
 				
-				raf.seek(seekPoint);
-				raf.writeBytes(data.toString());
-				  
-				//seekPoint += data.length(); //지금 써진 파일 byte만큼 pointer 이동
+				raf.seek(seekPoint); // seekPoint 설정
+				raf.writeBytes(data.toString()); // 파일쓰기
 				
 				System.out.println("getFilePointer : " + raf.getFilePointer());
 				System.out.println("seekPoint : " + seekPoint);
 				System.out.println("-------------------------------------------");
 				
+				// 현재 분할 파일의 데이터 크기만큼 seekPoint를 증가시키고 
+				// 이 정보를 임시 .txt파일에 기록
 				if(tempPathTxt.exists()) {
 					FileOutputStream fos = new FileOutputStream(tempPathTxt);
 					fos.write(Long.toString(seekPoint + data.length()).getBytes());		
