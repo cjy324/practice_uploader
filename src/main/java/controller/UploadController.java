@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +29,7 @@ public class UploadController {
 			System.out.println(realPath);
 			
 			
-//			// 파일 스트림 읽기
+//			// 파일 스트림 읽기(테스트용)
 //			BufferedReader reader = new BufferedReader(new InputStreamReader(
 //				    request.getInputStream()));
 //				  for (String line; (line = reader.readLine()) != null;) {
@@ -135,6 +134,8 @@ public class UploadController {
 					fos.close(); // 자원 사용 종료
 				}
 				
+				
+				
 				// (테스트용)
 				System.out.println("getFilePointer : " + raf.getFilePointer());
 				System.out.println("addedSeekPoint : " + addedSeekPoint);
@@ -142,7 +143,19 @@ public class UploadController {
 				
 				raf.close(); // 자원 사용 종료
 				fr.close(); // 자원 사용 종료
-
+				
+				// 분할 파일 삭제
+				if(newFile.exists()) {
+					newFile.delete();
+					System.out.println(newFile.getName() + " 삭제 완료");
+				}
+				
+				// 모든 분할 파일 업로드가 완료 되었을 경우 임시 txt파일 삭제
+				if(addedSeekPoint == originSize && tempPathTxt.exists()) {
+					tempPathTxt.delete();
+					System.out.println(tempPathTxt.getName() + " 삭제 완료");
+				}
+				
 			}else {
 				// Multipart로 요청 받기 위한 객체 생성
 				MultipartRequest multiReq = new MultipartRequest(

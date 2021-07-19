@@ -216,7 +216,7 @@
 	    			// 분할 파일별 이름을 설정
 	    			slicedFiles[k].name = "temp." + numFormat(k);
 	    			// 각 file을 formData 객체에 담기
-			        formData.append("slicedFiles", slicedFiles[k]);
+			        formData.set("slicedFiles", slicedFiles[k]);
 			        
 	    			let params = "&guid="+ guid;
 				        params += "&size="+ newFileList[i].size;
