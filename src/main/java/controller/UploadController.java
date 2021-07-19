@@ -17,7 +17,10 @@ public class UploadController {
 	
 		public String server(HttpServletRequest request, HttpServletResponse response) throws IOException {
 			
-			int sizeLimit = 15*1024*1024;  // 15MB
+			// 원본 파일 사이즈
+			long originSize = Long.parseLong(request.getParameter("originSize"));
+			// multipartRequest로 받을때 최소 제한 용량을 원본 파일 사이즈보다 조금 더 여유 있게 설정
+			int sizeLimit = Math.toIntExact(originSize) + 10000;
 			String encType = "UTF-8";
 
 //			// 파일 스트림 읽기(테스트용)
@@ -56,7 +59,6 @@ public class UploadController {
 				String guid = request.getParameter("guid");
 				Long limitSize = Long.parseLong(request.getParameter("limitSize"));
 				String originName = request.getParameter("originName");
-				Long originSize = Long.parseLong(request.getParameter("originSize"));
 				String originType = request.getParameter("originType");
 				int index = Integer.parseInt(request.getParameter("index"));
 				int slicedFilesLength = Integer.parseInt(request.getParameter("slicedFilesLength"));

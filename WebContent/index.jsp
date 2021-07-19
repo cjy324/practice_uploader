@@ -12,7 +12,8 @@
         <div class="title_bar">
             <h1>UPLOADER</h1>
         </div>
-        <progress id="progressBar" value="0" max="100" style="width:100%"></progress>
+        <progress id="progressBar" value="0" max="100" style="width:70%"></progress>
+        <p id="message"></p>
         <div class="uploader_body">
             <div id="top_area" class="top_area">
                 <input type="checkbox">
@@ -20,7 +21,8 @@
                 <div>파일 크기</div>
             </div>
             <div id="upload_area" class="upload_area">
-				<input id="fileInput" type='file' onchange="setUploadFiles(event)" name='userfile' multiple style="display: none;">	
+				<input id="fileInput" type='file' onchange="setUploadFiles(event)" name='userfile' multiple style="display: none;">
+				
 				<ul class="uploadZone" id="uploadZone"></ul>
             </div>
             <div id="info_area" class="info_area">
@@ -67,43 +69,45 @@
     		<!-- <iframe class="uploaded_frame" src="fileUpload.jsp" frameborder="0"></iframe> -->
     	</div>
     </section>
-	
-<script lang="text/javascript">
-	// iframe window 가져오기
-	// const uploadWindow = document.getElementById("upload_frame").contentWindow;
+<script type="text/javascript">
 
-	// 태그 가져오기
+	//iframe window 가져오기
+	//const uploadWindow = document.getElementById("upload_frame").contentWindow;
+	
+	//태그 가져오기
 	const fileInput = document.getElementById("fileInput");
 	const uploadZone = document.getElementById("uploadZone");
+	const progressBar = document.getElementById("progressBar");
+	const message = document.getElementById("message");
 	
-	// fileList를 담을 배열 객체 생성
+	//fileList를 담을 배열 객체 생성
 	let newFileList = [];
 	
-	// file 전송 정보를 담을 formData 객체 생성
+	//file 전송 정보를 담을 formData 객체 생성
 	const formData = new FormData()
 	
-	// 버튼으로 파일추가input 불러오기
+	//버튼으로 파일추가input 불러오기
 	function selectFiles() {
 		fileInput.click();
 	}
 	
-	// 업로드 될 파일리스트 그리기
+	//업로드 될 파일리스트 그리기
 	function showFiles(files) {
 		
 		let fileListLi = ""	// dropZone에 drop한 파일별 태그 생성
-	    
-	    for(let i = 0; i < files.length; i++) {
-	    	fileListLi += "<li>";
-	    	fileListLi += "<input id='chk_file_" + [i] + "' type='checkbox'  value='false'>";
-	    	fileListLi += "<span>" + files[i].name + "</span>";
-	    	fileListLi += "<span> " + files[i].size + " Byte</span>";
-	    	fileListLi += "</li>";
-	    }
+	 
+	 	for(let i = 0; i < files.length; i++) {
+		 	fileListLi += "<li>";
+		 	fileListLi += "<input id='chk_file_" + [i] + "' type='checkbox'  value='false'>";
+		 	fileListLi += "<span>" + files[i].name + "</span>";
+		 	fileListLi += "<span> " + files[i].size + " Byte</span>";
+		 	fileListLi += "</li>";
+		}
 		
 		uploadZone.innerHTML = fileListLi;
 	}
 	
-	// 파일 업로드를 위한 데이터 셋팅(from Input)
+	//파일 업로드를 위한 데이터 셋팅(from Input)
 	function setUploadFiles(e){
 		// Input으로부터 파일 배열 가져오기
 		newFileList = e.target.files;
@@ -112,129 +116,156 @@
 		showFiles(newFileList);
 	}
 	
-	// 드래그한 파일이 최초로 uploadZone에 진입했을 때
+	//드래그한 파일이 최초로 uploadZone에 진입했을 때
 	uploadZone.addEventListener("dragenter", function(e) {
-	    e.stopPropagation()
-	    e.preventDefault()	
+		e.stopPropagation()
+		e.preventDefault()	
 	})
 	
-	// 드래그한 파일이 uploadZone을 벗어났을 때
+	//드래그한 파일이 uploadZone을 벗어났을 때
 	uploadZone.addEventListener("dragleave", function(e) {
-	    e.stopPropagation()
-	    e.preventDefault()
+		e.stopPropagation()
+		e.preventDefault()
 	})
 	
-	// 드래그한 파일이 uploadZone에 머물러 있을 때
+	//드래그한 파일이 uploadZone에 머물러 있을 때
 	uploadZone.addEventListener("dragover", function(e) {
-	    e.stopPropagation()
-	    e.preventDefault()
+		e.stopPropagation()
+		e.preventDefault()
 	})
 	
-	// 드래그한 파일이 uploadZone에 드랍되었을 때
+	//드래그한 파일이 uploadZone에 드랍되었을 때
 	uploadZone.addEventListener("drop", function(e) {
-	    e.preventDefault()
-	
-	    const droppedFiles = e.dataTransfer && e.dataTransfer.files
-	    console.log(droppedFiles)
-	
-	    if (droppedFiles != null) {
-	    	// 만약 files의 갯수가 1보다 작으면 "폴더 업로드 불가" 알림
-	        if (droppedFiles.length < 1) {
-	            alert("폴더 업로드 불가")
-	            return
-	        }
-	    	// uploadZone에 드랍된 파일들로 파일리스트 세팅
-	        newFileList = droppedFiles;
-	        showFiles(droppedFiles);
-	    } else {
-	        alert("ERROR")
-	    }
-	
+		e.preventDefault()
+		
+		const droppedFiles = e.dataTransfer && e.dataTransfer.files
+		console.log(droppedFiles)
+		
+		if (droppedFiles != null) {
+			// 만약 files의 갯수가 1보다 작으면 "폴더 업로드 불가" 알림
+			if (droppedFiles.length < 1) {
+				alert("폴더 업로드 불가")
+				return
+			}
+			// uploadZone에 드랍된 파일들로 파일리스트 세팅
+			newFileList = droppedFiles;
+			showFiles(droppedFiles);
+		} else {
+			alert("ERROR")
+		}
 	})
 	
-	// 파일 전송
+	
+	//파일 전송
 	function startUpload(e){
 		// ajax를 하기 위한 XmlHttpRequest 객체
-	    const xhttp = new XMLHttpRequest();
+		const xhttp = new XMLHttpRequest(); 
+		
+		// progressBar
+	    xhttp.upload.onloadstart = function (e) {
+	 		progressBar.value = 0;
+	 		progressBar.max = e.total;
+	 		message.textContent = "uploading...";
+		};
+		xhttp.upload.onprogress = function (e) {
+			progressBar.value = e.loaded;
+			progressBar.max = e.total;
+		};
+		xhttp.upload.onloadend = function (e) {
+			message.textContent = "upload complete!!";
+		};
+	
+		for(let i = 0; i < newFileList.length; i++){	
+			console.log(newFileList[i]);
+	 		    	
+		 	// 단일 파일 제한 용량 설정
+		 	const limitSize = 200*1024*1024;  // Byte
+		 	// 분할한 파일을 담을 배열 객체
+		 	const slicedFiles = [];
 	 	
-	    for(let i = 0; i < newFileList.length; i++){	
-	    	console.log(newFileList[i]);
-	    		    	
-	    	// 단일 파일 제한 용량 설정
-	    	const limitSize = 13000;  // Byte
-	    	// 분할한 파일을 담을 배열 객체
-	    	const slicedFiles = [];
-	    	
-	    	/* 분할 시작 */
-	    	// 만약, 파일용량이 제한용량보다 크면
-	    	if(newFileList[i].size >= limitSize){ 
-	    		// 용량에 따른 분할 수 계산
-	    		const slicedFilesNum = Math.ceil(newFileList[i].size / limitSize); 
-	    		
-	    		console.log(slicedFilesNum);
-	    		console.log(limitSize);
-	    		
-	    		// 2자리 수로 만드는 함수
-	    		function numFormat(num) {
-	    			num = Number(num).toString(); 
-	    			if(Number(num) < 10 && num.length == 1){
-	    				num = "0" + num;
-	    			}
-	    			return num; 
-	    		}
+		 	/* 분할 시작 */
+		 	// 만약, 파일용량이 제한용량보다 크면
+		 	if(newFileList[i].size >= limitSize){ 
+		 		// 용량에 따른 분할 수 계산
+		 		const slicedFilesNum = Math.ceil(newFileList[i].size / limitSize); 
+		 		
+		 		console.log(slicedFilesNum);
+		 		console.log(limitSize);
+		 		
+		 		// 2자리 수로 만드는 함수
+		 		function numFormat(num) {
+		 			num = Number(num).toString(); 
+		 			if(Number(num) < 10 && num.length == 1){
+		 				num = "0" + num;
+		 			}
+		 			return num;
+		 		}
 
-	    		
-	    		// 분할
-	    		for(let f = 0; f < slicedFilesNum; f++){
-	    			// 각 분할 횟수별 분할 시작 포인트 설정
-	    			const startPoint = limitSize * f;
-	    			// slice(시작점, 자를점, Type)로 파일 분할
-	    			const slicedFile = newFileList[i].slice(startPoint, startPoint + limitSize, newFileList[i].type);
-	    			// 분할된 파일 slicedFiles 배열 객체에 담기
-	    			slicedFiles.push(slicedFile);
-	    		}
-	    		console.log(slicedFiles);
-	    		console.log(slicedFiles.length);
-	    	    
-	    	}
-	    	/* 분할 끝 */
-	    	
-	    	
-	    	/* 분할 파일 전송 시작 */
-	    	if(slicedFiles.length !== 0){
-	    		
-	    		// GUID 생성
-	    		function createGuid() {
-  					return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    				const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    				return v.toString(16);
+		 		// 분할
+		 		for(let f = 0; f < slicedFilesNum; f++){
+		 			// 각 분할 횟수별 분할 시작 포인트 설정
+		 			const startPoint = limitSize * f;
+		 			// slice(시작점, 자를점, Type)로 파일 분할
+		 			const slicedFile = newFileList[i].slice(startPoint, startPoint + limitSize, newFileList[i].type);
+		 			// 분할된 파일 slicedFiles 배열 객체에 담기
+		 			slicedFiles.push(slicedFile);
+		 		}
+		 		console.log(slicedFiles);
+		 		console.log(slicedFiles.length);
+		 	    
+		 	}
+		 	/* 분할 끝 */
+	 
+	 	
+		 	/* 분할 파일 전송 시작 */
+		 	if(slicedFiles.length !== 0){
+		 		
+		 		// GUID 생성
+		 		function createGuid() {
+					return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+					const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+					return v.toString(16);
 					});
 				}
-	    		
-	    		const guid = createGuid();
-	    		
-	    		// 분할 파일 수 만큼 반복
-	    		for(let k = 0; k < slicedFiles.length; k++){
-	    			// 분할 파일별 이름을 설정
-	    			slicedFiles[k].name = "temp." + numFormat(k);
-	    			// 각 file을 formData 객체에 담기
-			        formData.set("slicedFiles", slicedFiles[k]);
-			        
-	    			// param 정보 담기
-	    			let params = "&guid=" + guid;
-	    				params += "&limitSize=" + limitSize;
-	    				params += "&originName=" + newFileList[i].name;
-				        params += "&originSize=" + newFileList[i].size;
-				        params += "&originType=" + newFileList[i].type;
-				        params += "&index=" + k;
-				        params += "&slicedFilesLength=" + slicedFiles.length;
+		 		
+		 		const guid = createGuid();
+		 		
+		 		// 분할 파일 수 만큼 반복
+		 		for(let k = 0; k < slicedFiles.length; k++){
+		 			// 분할 파일별 이름을 설정
+		 			slicedFiles[k].name = "temp." + numFormat(k);
+		 			// 각 file을 formData 객체에 담기
+					formData.set("slicedFiles", slicedFiles[k]);
 				        
-	    			
+		 			// param 정보 담기
+		 			let params = "&guid=" + guid;
+		 				params += "&limitSize=" + limitSize;
+		 				params += "&originName=" + newFileList[i].name;
+					    params += "&originSize=" + newFileList[i].size;
+					    params += "&originType=" + newFileList[i].type;
+					    params += "&index=" + k;
+					    params += "&slicedFilesLength=" + slicedFiles.length;
+					
+					// progressBar
+					// 비동기 처리를 했을때만 가능
+					xhttp.upload.onloadstart = function (e) {
+						progressBar.value = 0;
+						progressBar.max = e.total;
+						message.textContent = "uploading...";
+					};
+					xhttp.upload.onprogress = function (e) {
+						progressBar.value = e.loaded;
+						progressBar.max = e.total;
+					};
+					xhttp.upload.onloadend = function (e) {
+						message.textContent = "upload complete!!";
+					};    
+					
 			     	// http 요청 타입 / 주소 / 동기식 여부 설정
 				    xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=true" + params, false); // 메서드와 주소 설정
 				    // http 요청
 				    xhttp.send(formData);   // 요청 전송(formData 전송)
-
+	
 				 	// XmlHttpRequest의 요청
 				    xhttp.onreadystatechange = function(e){   // 요청에 대한 콜백
 				        // XMLHttpRequest를 이벤트 파라미터에서 취득
@@ -258,15 +289,16 @@
 				            }
 				        }
 				    }
-	    		}
-	    	/* 분할 파일 전송 끝 */
-	    	
-	    	/* 단일 파일 전송 시작 */
-	    	}else{
-	    		// 각 file을 formData 객체에 담기
+		 		}
+		 	/* 분할 파일 전송 끝 */
+	 	
+		 	/* 단일 파일 전송 시작 */
+		 	}else{
+		 		// 각 file을 formData 객체에 담기
 		        formData.append("files", newFileList[i]);
+        		
 		     	// http 요청 타입 / 주소 / 동기식 여부 설정
-			    xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=false", true); // 메서드와 주소 설정
+			    xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=false&originSize=" + newFileList[i].size, true); // 메서드와 주소 설정
 			    // http 요청
 			    xhttp.send(formData);   // 요청 전송(formData 전송)
 			 	// XmlHttpRequest의 요청
@@ -292,16 +324,13 @@
 			            }
 			        }
 			    }
-	    	}
-	    	/* 단일 파일 전송 끝 */
-	    }
-	 	
-	 	 
-	}
-	
-	
+		 	}
+		 	/* 단일 파일 전송 끝 */
+	 }
 		
-	
-</script>    
+		 
+	}
+
+</script>
 </body>
 </html>
