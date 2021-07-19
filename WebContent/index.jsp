@@ -159,14 +159,15 @@
 	 	
 	    for(let i = 0; i < newFileList.length; i++){	
 	    	console.log(newFileList[i]);
-	    	
-	    	/* 분할 시작 */
+	    		    	
 	    	// 단일 파일 제한 용량 설정
 	    	const limitSize = 13000;  // Byte
 	    	// 분할한 파일을 담을 배열 객체
 	    	const slicedFiles = [];
-
-	    	if(newFileList[i].size >= limitSize){ // 만약, 파일용량이 제한용량보다 크면
+	    	
+	    	/* 분할 시작 */
+	    	// 만약, 파일용량이 제한용량보다 크면
+	    	if(newFileList[i].size >= limitSize){ 
 	    		// 용량에 따른 분할 수 계산
 	    		const slicedFilesNum = Math.ceil(newFileList[i].size / limitSize); 
 	    		
@@ -212,17 +213,22 @@
 	    		
 	    		const guid = createGuid();
 	    		
+	    		// 분할 파일 수 만큼 반복
 	    		for(let k = 0; k < slicedFiles.length; k++){
 	    			// 분할 파일별 이름을 설정
 	    			slicedFiles[k].name = "temp." + numFormat(k);
 	    			// 각 file을 formData 객체에 담기
 			        formData.set("slicedFiles", slicedFiles[k]);
 			        
-	    			let params = "&guid="+ guid;
-				        params += "&size="+ newFileList[i].size;
-				        params += "&type="+ newFileList[i].type;
-				        params += "&index="+ k;
-				        params += "&length=" + slicedFiles.length;
+	    			// param 정보 담기
+	    			let params = "&guid=" + guid;
+	    				params += "&limitSize=" + limitSize;
+	    				params += "&originName=" + newFileList[i].name;
+				        params += "&originSize=" + newFileList[i].size;
+				        params += "&originType=" + newFileList[i].type;
+				        params += "&index=" + k;
+				        params += "&slicedFilesLength=" + slicedFiles.length;
+				        
 	    			
 			     	// http 요청 타입 / 주소 / 동기식 여부 설정
 				    xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=true" + params, false); // 메서드와 주소 설정
@@ -253,11 +259,14 @@
 				        }
 				    }
 	    		}
+	    	/* 분할 파일 전송 끝 */
+	    	
+	    	/* 단일 파일 전송 시작 */
 	    	}else{
 	    		// 각 file을 formData 객체에 담기
 		        formData.append("files", newFileList[i]);
 		     	// http 요청 타입 / 주소 / 동기식 여부 설정
-			    xhttp.open("POST", "http://localhost:8086/upload/usr/server", true); // 메서드와 주소 설정
+			    xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=false", true); // 메서드와 주소 설정
 			    // http 요청
 			    xhttp.send(formData);   // 요청 전송(formData 전송)
 			 	// XmlHttpRequest의 요청
@@ -284,7 +293,7 @@
 			        }
 			    }
 	    	}
-	    	
+	    	/* 단일 파일 전송 끝 */
 	    }
 	 	
 	 	 
