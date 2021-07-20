@@ -19,8 +19,8 @@ public class UploadController {
 			
 			// 원본 파일 사이즈
 			long originSize = Long.parseLong(request.getParameter("originSize"));
-			// multipartRequest로 받을때 최소 제한 용량을 원본 파일 사이즈보다 조금 더 여유 있게 설정
-			int sizeLimit = Math.toIntExact(originSize) + 10000;
+			// multipartRequest로 받을때 최소 제한 용량을 원본 파일 사이즈보다 조금 더 여유 있게 설정..
+			int sizeLimit = 10 * 1024 * 1024; // 약 10MB
 			String encType = "UTF-8";
 
 //			// 파일 스트림 읽기(테스트용)
@@ -57,7 +57,7 @@ public class UploadController {
 				
 				// 파일에 대한 정보를 parameter로 받기
 				String guid = request.getParameter("guid");
-				Long limitSize = Long.parseLong(request.getParameter("limitSize"));
+				int limitSize = Integer.parseInt(request.getParameter("limitSize"));
 				String originName = request.getParameter("originName");
 				String originType = request.getParameter("originType");
 				int index = Integer.parseInt(request.getParameter("index"));
@@ -139,7 +139,7 @@ public class UploadController {
 				System.out.println("-------------------------------------------");
 
 				// 모든 분할 파일 업로드가 완료 되었을 경우
-				if(index + 1 == slicedFilesLength && tempTxtFile.exists()) {
+				if(index == slicedFilesLength-1 && tempTxtFile.exists()) {
 					// 1. 파일명 원본 파일명으로 변경
 					File uploadedFile = new File(NewFileLocation);
 					File originFileName = new File(realPath + "\\" + originName);
@@ -165,5 +165,14 @@ public class UploadController {
 			
 			}
 			return null;
-		}	
+		}
+		
+		// long을 int로 안전하게 형 변환
+		public static int safeLongToInt(long l) {
+		    int i = (int)l;
+		    if ((long)i != l) {
+		        throw new IllegalArgumentException(l + " cannot be cast to int without changing its value.");
+		    }
+		    return i;
+		}
 }
