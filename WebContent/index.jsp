@@ -13,8 +13,12 @@
         <div class="title_bar">
             <h1>UPLOADER</h1>
         </div>
-        <progress id="progressBar" value="0" max="100" style="width:70%"></progress>
-        <p id="message"></p>
+        <div id="progressBarZone">
+        	<progress id='allProgressBar' value='0' max='100' style='width:70%'></progress>
+        	<p id="allMessage"></p>
+	        <progress id="progressBar" value="0" max="100" style="width:70%"></progress>
+	        <p id="message"></p>
+        </div>
         <div class="uploader_body">
             <div id="top_area" class="top_area">
                 <input type="checkbox">

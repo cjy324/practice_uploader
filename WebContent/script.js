@@ -5,6 +5,7 @@
 	//태그 가져오기
 	const fileInput = document.getElementById("fileInput");
 	const uploadZone = document.getElementById("uploadZone");
+    const progressBarZone = document.getElementById("progressBarZone");
 	const progressBar = document.getElementById("progressBar");
 	const message = document.getElementById("message");
 	
@@ -23,7 +24,7 @@
 	function showFiles(files) {
 		
 		let fileListLi = ""	// dropZone에 drop한 파일별 태그 생성
-	 
+        
 	 	for(let i = 0; i < files.length; i++) {
 		 	fileListLi += "<li>";
 		 	fileListLi += "<input id='chk_file_" + [i] + "' type='checkbox'  value='false'>";
@@ -86,22 +87,11 @@
 	//파일 전송
 	function startUpload(e){
 		// ajax를 하기 위한 XmlHttpRequest 객체
-		const xhttp = new XMLHttpRequest(); 
-		
-		// progressBar
-	    xhttp.upload.onloadstart = function (e) {
-	 		progressBar.value = 0;
-	 		progressBar.max = e.total;
-	 		message.textContent = "uploading...";
-		};
-		xhttp.upload.onprogress = function (e) {
-			progressBar.value = e.loaded;
-			progressBar.max = e.total;
-		};
-		xhttp.upload.onloadend = function (e) {
-			message.textContent = "upload complete!!";
-		};
-	
+		const xhttp = new XMLHttpRequest();
+
+        // 분할 전송시 사용할 index
+        let slicedFileIndex = 0;
+
 		for(let i = 0; i < newFileList.length; i++){	
 			
             const newFile = newFileList[i];
@@ -147,7 +137,41 @@
 		 	    
 		 	}
 		 	/* 분할 끝 */
-	 
+
+            // progressBar
+            xhttp.upload.onloadstart = function (e) {
+                progressBar.value = 0;
+                progressBar.max = e.total;
+                message.textContent = "uploading...";
+            };
+            // 단일 전송인 경우
+            if(slicedFiles.length == 0){
+                xhttp.upload.onprogress = function (e) {
+                    progressBar.value = e.loaded;
+                    progressBar.max = e.total;
+                };
+            // 분할 전송인 경우
+            }else{
+                
+                // let allProgressBar = "";
+                // allProgressBar += "<progress id='allProgressBar' value='0' max='100' style='width:70%'></progress>";
+                // allProgressBar += "<p id='allMessage'></p>";
+
+                // progressBarZone.innerHTML = allProgressBar;
+
+                xhttp.upload.onprogress = function (e) {
+                    progressBar.value = e.loaded;
+                    progressBar.max = e.total;
+                    document.getElementById("allProgressBar").value = (slicedFileIndex + 1)/(slicedFiles.length)*100;
+                    document.getElementById("allProgressBar").max = (slicedFiles.length-1)*100;
+                };
+                
+                
+            }
+            
+            xhttp.upload.onloadend = function (e) {
+                message.textContent = "\"" + newFileList[i].name + "\"" + " file upload complete!!";
+            };
 	 	
 		 	/* 분할 파일 전송 시작 */
 		 	if(slicedFiles.length !== 0){
@@ -162,7 +186,6 @@
 				}
 		 		
 		 		const guid = createGuid();
-                let slicedFileIndex = 0;
 
                 // 각 file을 formData 객체에 담기
                 formData.set("slicedFiles", slicedFiles[slicedFileIndex]);
@@ -222,7 +245,7 @@
 		 	/* 단일 파일 전송 시작 */
 		 	}else{
                 console.log("단일 파일 전송 시작");
-                
+
 		 		// 각 file을 formData 객체에 담기
 		        formData.set("files", newFile);
         		
