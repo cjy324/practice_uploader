@@ -11,12 +11,9 @@
 	const message = document.getElementById("message");
     const allMessage = document.getElementById("allMessage");
 	
-	//fileList를 담을 배열 객체 생성
+	//fileList를 담을 배열 객체 생성(전역변수)
 	let newFileList = [];
     const newFileListIndex = 0;
-	
-	//file 전송 정보를 담을 formData 객체 생성
-	const formData = new FormData()
 	
 	//버튼으로 파일추가input 불러오기
 	function selectFiles() {
@@ -53,19 +50,16 @@
 		e.stopPropagation()
 		e.preventDefault()	
 	})
-	
 	//드래그한 파일이 uploadZone을 벗어났을 때
 	uploadZone.addEventListener("dragleave", function(e) {
 		e.stopPropagation()
 		e.preventDefault()
 	})
-	
 	//드래그한 파일이 uploadZone에 머물러 있을 때
 	uploadZone.addEventListener("dragover", function(e) {
 		e.stopPropagation()
 		e.preventDefault()
 	})
-	
 	//드래그한 파일이 uploadZone에 드랍되었을 때
 	uploadZone.addEventListener("drop", function(e) {
 		e.preventDefault()
@@ -90,7 +84,7 @@
     // ajax통신
     function startAjax(xhttp, slicedFiles, slicedFileIndex, params, newFileList, newFileListIndex){
 
-        /* progressBar */
+        /* progressBar 시작 */
         xhttp.upload.onloadstart = function (e) {
             progressBar.value = 0;
             progressBar.max = e.total;
@@ -122,12 +116,11 @@
                 if(slicedFileIndex+1 == slicedFiles.length){
                     allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file upload complete!!";
                 }
-                // 진행중......
-                //https://www.codingfactory.net/11010
             }
-        
         }
-         
+        /* progressBar 끝 */
+
+        /* 파일 전송을 위한 ajax통신 시작 */
         //file 전송 정보를 담을 formData 객체 생성
         const newFormData = new FormData();
         // 각 file을 formData 객체에 담기
@@ -137,8 +130,6 @@
             newFormData.append("slicedFiles", slicedFiles[slicedFileIndex]);
         }
 
-        
-        
         // http 요청 타입 / 주소 / 동기식 여부 설정
         if(slicedFiles.length == 0){    // 단일 전송인 경우
             xhttp.open("POST", "http://localhost:8086/upload/usr/server?index=" + 0 + params, true); // 메서드와 주소 설정    
@@ -184,25 +175,26 @@
                 }
             }
         }
+        /* 파일 전송을 위한 ajax통신 끝 */
     }
 	
-	//파일 전송
+	//파일 업로드
 	function startUpload(newFileListIndex){
-		// ajax를 하기 위한 XmlHttpRequest 객체
+
+		// ajax 통신을 하기 위한 XmlHttpRequest 객체 생성
 		const xhttp = new XMLHttpRequest();
-			
-        console.log("startUpload---------------newFileListIndex: " + newFileListIndex);  
-        // const newFile = newFileList[newFileListIndex];
-        console.log("newFile : " + newFileList[newFileListIndex]);
+        console.log("startUpload--------------- newFileListIndex: " + newFileListIndex + " ---------------");  
                 
         // 단일 파일 제한 용량 설정
         // Tomcat은 기본적으로 Post로 전송할 데이터의 크기를 최대2MB까지 Default로 잡고있다.
         // https://youngram2.tistory.com/110
         const limitSize = 2 * 1024 * 1024;  // Byte // 약 2MB
+        console.log("limitSize: " + limitSize);
+        
         // 분할한 파일을 담을 배열 객체
         const slicedFiles = [];
         // 분할 전송시 사용할 index
-        let slicedFileIndex = 0;
+        const slicedFileIndex = 0;
     
         /* 분할 시작 */
         // 만약, 파일용량이 제한용량보다 크면
@@ -210,9 +202,7 @@
             
             // 용량에 따른 분할 수 계산
             const slicedFilesNum = Math.ceil(newFileList[newFileListIndex].size / limitSize); 
-            
-            console.log(slicedFilesNum);
-            console.log(limitSize);
+            console.log("slicedFilesNum: " + slicedFilesNum);
 
             // 분할
             for(let f = 0; f < slicedFilesNum; f++){
@@ -229,22 +219,24 @@
         }
         /* 분할 끝 */
 
+        // 기본 파라미터 정보 담기
+        let params = "&limitSize=" + limitSize;
+            params += "&originName=" + newFileList[newFileListIndex].name;
+            params += "&originSize=" + newFileList[newFileListIndex].size;
+            params += "&originType=" + newFileList[newFileListIndex].type;
+
         /* 단일 파일일 경우 단일 전송 시작*/
         if(slicedFiles.length == 0){
             console.log("단일 파일 전송 시작");
 
-            // param 정보 담기
-            let params = "&guid=" + 0;
+            // params 추가 정보 담기
             params += "&sliced=false";
-            params += "&limitSize=" + limitSize;
-            params += "&originName=" + newFileList[newFileListIndex].name;
-            params += "&originSize=" + newFileList[newFileListIndex].size;
-            params += "&originType=" + newFileList[newFileListIndex].type;
+            params += "&guid=" + 0;
             params += "&slicedFilesLength=" + 0;
             
             // ajax통신 시작
             startAjax(xhttp, slicedFiles, slicedFileIndex, params, newFileList, newFileListIndex);
-            
+
         /* 단일 파일 전송 끝 */
         }
         
@@ -262,13 +254,9 @@
     
             const guid = createGuid();
 
-            // param 정보 담기
-            let params = "&guid=" + guid;
+            // params 추가 정보 담기
             params += "&sliced=true";
-            params += "&limitSize=" + limitSize;
-            params += "&originName=" + newFileList[newFileListIndex].name;
-            params += "&originSize=" + newFileList[newFileListIndex].size;
-            params += "&originType=" + newFileList[newFileListIndex].type;
+            params += "&guid=" + guid;
             params += "&slicedFilesLength=" + slicedFiles.length;
 
             // ajax통신 시작
