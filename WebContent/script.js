@@ -7,10 +7,13 @@
 	const uploadZone = document.getElementById("uploadZone");
     const progressBarZone = document.getElementById("progressBarZone");
 	const progressBar = document.getElementById("progressBar");
+    const allProgressBar = document.getElementById("allProgressBar");
 	const message = document.getElementById("message");
+    const allMessage = document.getElementById("allMessage");
 	
 	//fileList를 담을 배열 객체 생성
 	let newFileList = [];
+    const newFileListIndex = 0;
 	
 	//file 전송 정보를 담을 formData 객체 생성
 	const formData = new FormData()
@@ -83,197 +86,194 @@
 			alert("ERROR")
 		}
 	})
+
+    // ajax통신
+    function startAjax(xhttp, slicedFiles, slicedFileIndex, params, newFileList, newFileListIndex){
+
+        /* progressBar */
+        xhttp.upload.onloadstart = function (e) {
+            progressBar.value = 0;
+            progressBar.max = e.total;
+            allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file uploading...";
+        };
+        // 단일 전송인 경우
+        if(slicedFiles.length == 0){
+            xhttp.upload.onprogress = function (e) {
+                progressBar.value = e.loaded;
+                progressBar.max = e.total;
+                allProgressBar.value = e.loaded;
+                allProgressBar.max = e.total;
+            };
+            xhttp.upload.onloadend = function (e) {
+                message.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file upload complete!!";
+                allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file upload complete!!";
+            };
+        // 분할 전송인 경우
+        }else{
+            xhttp.upload.onprogress = function (e) {
+                progressBar.value = e.loaded;
+                progressBar.max = e.total;
+                allProgressBar.value = (slicedFileIndex+1)/(slicedFiles.length)*100;
+                allProgressBar.max = 100;
+            };
+            xhttp.upload.onloadend = function (e) {
+                message.textContent = "\"" + newFileList[newFileListIndex].name + "[" + Number(slicedFileIndex+1) + "]" + "\"" + " file upload complete!!";
+                allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file uploading...";
+                if(slicedFileIndex+1 == slicedFiles.length){
+                    allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file upload complete!!";
+                }
+                // 진행중......
+                //https://www.codingfactory.net/11010
+            }
+        
+        }
+         
+        //file 전송 정보를 담을 formData 객체 생성
+        const newFormData = new FormData();
+        // 각 file을 formData 객체에 담기
+        if(slicedFiles.length == 0){ // 단일 전송인 경우
+            newFormData.append("files", newFileList[newFileListIndex]);
+        }else{  // 분할 전송인 경우
+            newFormData.append("slicedFiles", slicedFiles[slicedFileIndex]);
+        }
+
+        
+        
+        // http 요청 타입 / 주소 / 동기식 여부 설정
+        if(slicedFiles.length == 0){    // 단일 전송인 경우
+            xhttp.open("POST", "http://localhost:8086/upload/usr/server?index=" + 0 + params, true); // 메서드와 주소 설정    
+        }else{      // 분할 전송인 경우
+            xhttp.open("POST", "http://localhost:8086/upload/usr/server?index=" + slicedFileIndex + params, true); // 메서드와 주소 설정
+        }
+        
+        // http 요청
+        xhttp.send(newFormData);   // 요청 전송(formData 전송)
+
+        // XmlHttpRequest의 요청
+        // 통신 상태 모니터링
+        xhttp.onreadystatechange = function(e){   // 요청에 대한 콜백
+            // XMLHttpRequest를 이벤트 파라미터에서 취득
+            const req = e.target;
+            console.log(req);   // 콘솔 출력
+
+            // 통신 상태가 완료가 되면...
+            if(req.readyState === 4) {    // 요청이 완료되면
+                // Http response 응답코드가 200(정상)
+                // states = 0 unintialized 요청이 초기화 안 된 상태
+                // 1=loaded 서버 연결 설정된 상태
+                // 2=loading 요청 접수된 상태
+                // 3=interactive 요청 처리 중 상태
+                // 4=complete 요청 완료되고 응답 준비된 상태
+                if(req.status === 200) {
+                    if(slicedFileIndex < slicedFiles.length-1){ // 만약, index가 slicedFiles.length 보다 작으면
+                        slicedFileIndex++; // index 1 증가
+                        // 재귀함수: 함수 내에서 자신을 다시 호출
+                        startAjax(xhttp, slicedFiles, slicedFileIndex, params, newFileList, newFileListIndex);
+                        console.log(newFileList[newFileListIndex].name + " file" + "[" + Number(slicedFileIndex+1) + "]" + "업로드 시작");
+                    }
+                    else if(newFileListIndex < newFileList.length-1){
+                        newFileListIndex++;
+                        console.log(newFileList[newFileListIndex].name + " file 업로드 시작");  
+                        startUpload(newFileListIndex);
+                    }              
+                    console.log("업로드 - 성공")
+                    console.log(xhttp.responseText)
+                }else{
+                    console.log("실패")
+                    console.error(xhttp.responseText)
+                }
+            }
+        }
+    }
 	
 	//파일 전송
-	function startUpload(e){
+	function startUpload(newFileListIndex){
 		// ajax를 하기 위한 XmlHttpRequest 객체
 		const xhttp = new XMLHttpRequest();
-
+			
+        console.log("startUpload---------------newFileListIndex: " + newFileListIndex);  
+        // const newFile = newFileList[newFileListIndex];
+        console.log("newFile : " + newFileList[newFileListIndex]);
+                
+        // 단일 파일 제한 용량 설정
+        // Tomcat은 기본적으로 Post로 전송할 데이터의 크기를 최대2MB까지 Default로 잡고있다.
+        // https://youngram2.tistory.com/110
+        const limitSize = 2 * 1024 * 1024;  // Byte // 약 2MB
+        // 분할한 파일을 담을 배열 객체
+        const slicedFiles = [];
         // 분할 전송시 사용할 index
         let slicedFileIndex = 0;
-
-		for(let i = 0; i < newFileList.length; i++){	
-			
-            const newFile = newFileList[i];
-            console.log("newFile : " + newFile);
-	 		    	
-		 	// 단일 파일 제한 용량 설정
-            // Tomcat은 기본적으로 Post로 전송할 데이터의 크기를 최대2MB까지 Default로 잡고있다.
-            // https://youngram2.tistory.com/110
-		 	const limitSize = 2 * 1024 * 1024;  // Byte // 약 2MB
-		 	// 분할한 파일을 담을 배열 객체
-		 	const slicedFiles = [];
-	 	
-		 	/* 분할 시작 */
-		 	// 만약, 파일용량이 제한용량보다 크면
-		 	if(newFile.size >= limitSize){ 
-                
-		 		// 용량에 따른 분할 수 계산
-		 		const slicedFilesNum = Math.ceil(newFile.size / limitSize); 
-		 		
-		 		console.log(slicedFilesNum);
-		 		console.log(limitSize);
-		 		
-		 		// // 2자리 수로 만드는 함수
-		 		// function numFormat(num) {
-		 		// 	num = Number(num).toString(); 
-		 		// 	if(Number(num) < 10 && num.length == 1){
-		 		// 		num = "0" + num;
-		 		// 	}
-		 		// 	return num;
-		 		// }
-
-		 		// 분할
-		 		for(let f = 0; f < slicedFilesNum; f++){
-		 			// 각 분할 횟수별 분할 시작 포인트 설정
-		 			const startPoint = limitSize * f;
-		 			// slice(시작점, 자를점, Type)로 파일 분할
-		 			const slicedFile = newFile.slice(startPoint, startPoint + limitSize, newFile.type);
-		 			// 분할된 파일 slicedFiles 배열 객체에 담기
-		 			slicedFiles.push(slicedFile);
-		 		}
-		 		console.log("slicedFiles : " + slicedFiles);
-		 		console.log("slicedFiles.length : " + slicedFiles.length);
-		 	    
-		 	}
-		 	/* 분할 끝 */
-
-            // progressBar
-            xhttp.upload.onloadstart = function (e) {
-                progressBar.value = 0;
-                progressBar.max = e.total;
-                message.textContent = "uploading...";
-            };
-            // 단일 전송인 경우
-            if(slicedFiles.length == 0){
-                xhttp.upload.onprogress = function (e) {
-                    progressBar.value = e.loaded;
-                    progressBar.max = e.total;
-                };
-            // 분할 전송인 경우
-            }else{
-                
-                // let allProgressBar = "";
-                // allProgressBar += "<progress id='allProgressBar' value='0' max='100' style='width:70%'></progress>";
-                // allProgressBar += "<p id='allMessage'></p>";
-
-                // progressBarZone.innerHTML = allProgressBar;
-
-                xhttp.upload.onprogress = function (e) {
-                    progressBar.value = e.loaded;
-                    progressBar.max = e.total;
-                    document.getElementById("allProgressBar").value = (slicedFileIndex + 1)/(slicedFiles.length)*100;
-                    document.getElementById("allProgressBar").max = (slicedFiles.length-1)*100;
-                };
-                
-                
-            }
+    
+        /* 분할 시작 */
+        // 만약, 파일용량이 제한용량보다 크면
+        if(newFileList[newFileListIndex].size >= limitSize){ 
             
-            xhttp.upload.onloadend = function (e) {
-                message.textContent = "\"" + newFileList[i].name + "\"" + " file upload complete!!";
-            };
-	 	
-		 	/* 분할 파일 전송 시작 */
-		 	if(slicedFiles.length !== 0){
-                console.log("분할 파일 전송 시작");
+            // 용량에 따른 분할 수 계산
+            const slicedFilesNum = Math.ceil(newFileList[newFileListIndex].size / limitSize); 
+            
+            console.log(slicedFilesNum);
+            console.log(limitSize);
 
-		 		// GUID 생성
-		 		function createGuid() {
-					return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-					const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-					return v.toString(16);
-					});
-				}
-		 		
-		 		const guid = createGuid();
+            // 분할
+            for(let f = 0; f < slicedFilesNum; f++){
+                // 각 분할 횟수별 분할 시작 포인트 설정
+                const startPoint = limitSize * f;
+                // slice(시작점, 자를점, Type)로 파일 분할
+                const slicedFile = newFileList[newFileListIndex].slice(startPoint, startPoint + limitSize, newFileList[newFileListIndex].type);
+                // 분할된 파일 slicedFiles 배열 객체에 담기
+                slicedFiles.push(slicedFile);
+            }
+            console.log("slicedFiles : " + slicedFiles);
+            console.log("slicedFiles.length : " + slicedFiles.length);
+            
+        }
+        /* 분할 끝 */
 
-                // 각 file을 formData 객체에 담기
-                formData.set("slicedFiles", slicedFiles[slicedFileIndex]);
-                    
-                // param 정보 담기
-                let params = "&guid=" + guid;
-                    params += "&limitSize=" + limitSize;
-                    params += "&originName=" + newFile.name;
-                    params += "&originSize=" + newFile.size;
-                    params += "&originType=" + newFile.type;
-                    params += "&slicedFilesLength=" + slicedFiles.length;
-                
-                // http 요청 타입 / 주소 / 동기식 여부 설정
-                xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=true&index=" + slicedFileIndex + params, true); // 메서드와 주소 설정
+        /* 단일 파일일 경우 단일 전송 시작*/
+        if(slicedFiles.length == 0){
+            console.log("단일 파일 전송 시작");
 
-                // http 요청
-                xhttp.send(formData);   // 요청 전송(formData 전송)
+            // param 정보 담기
+            let params = "&guid=" + 0;
+            params += "&sliced=false";
+            params += "&limitSize=" + limitSize;
+            params += "&originName=" + newFileList[newFileListIndex].name;
+            params += "&originSize=" + newFileList[newFileListIndex].size;
+            params += "&originType=" + newFileList[newFileListIndex].type;
+            params += "&slicedFilesLength=" + 0;
+            
+            // ajax통신 시작
+            startAjax(xhttp, slicedFiles, slicedFileIndex, params, newFileList, newFileListIndex);
+            
+        /* 단일 파일 전송 끝 */
+        }
+        
+        /* 분할 파일일 경우 분할 전송 시작 */
+        if(slicedFiles.length > 0){
+            console.log("분할 파일 전송 시작");
 
-                // XmlHttpRequest의 요청
-                // 통신 상태 모니터링
-                xhttp.onreadystatechange = function(e){   // 요청에 대한 콜백
-			        // XMLHttpRequest를 이벤트 파라미터에서 취득
-			        const req = e.target;
-			        console.log(req);   // 콘솔 출력
+            // GUID 생성
+            function createGuid() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+                });
+            }
+    
+            const guid = createGuid();
 
-                    // 콜백 함수로 다루기
-                    // 콜백은 단순히 메소드로 돌아온 응답을 처리하도록 지정된 메소드
-                    // states = 0 unintialized 요청이 초기화 안 된 상태.
-                    // 1=loaded 서버 연결 설정된 상태
-                    // 2=loading 요청 접수된 상태
-                    // 3=interactive 요청 처리 중 상태
-                    // 4=complete 요청 완료되고 응답 준비된 상태
-                    if(req.readyState === 4){ 
-                        if(slicedFileIndex !== slicedFiles.length-1){ // 만약, index가 slicedFiles.length 보다 작으면
-                            slicedFileIndex++; // index 1 증가
-                            formData.set("slicedFiles", slicedFiles[slicedFileIndex]);
-                            xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=true&index=" + slicedFileIndex + params, true); // 메서드와 주소 설정
-                            xhttp.send(formData);
-                            console.log("onUploadingIndex: " + slicedFileIndex);
-                        }
-                    }
-			
-			        // 통신 상태가 완료가 되면...
-			        if(req.readyState === XMLHttpRequest.DONE) {    // 요청이 완료되면
-			            // Http response 응답코드가 200(정상)이면..
-			            if(req.status === 200) {
-			                console.log("분할 업로드 - 성공")
-			                console.log(xhttp.responseText)
-			            }else{
-			            	console.log("실패")
-			                console.error(xhttp.responseText)
-			            }
-			        }
-			    }
-		 	/* 분할 파일 전송 끝 */
-	 	
-		 	/* 단일 파일 전송 시작 */
-		 	}else{
-                console.log("단일 파일 전송 시작");
+            // param 정보 담기
+            let params = "&guid=" + guid;
+            params += "&sliced=true";
+            params += "&limitSize=" + limitSize;
+            params += "&originName=" + newFileList[newFileListIndex].name;
+            params += "&originSize=" + newFileList[newFileListIndex].size;
+            params += "&originType=" + newFileList[newFileListIndex].type;
+            params += "&slicedFilesLength=" + slicedFiles.length;
 
-		 		// 각 file을 formData 객체에 담기
-		        formData.set("files", newFile);
-        		
-		     	// http 요청 타입 / 주소 / 동기식 여부 설정
-			    xhttp.open("POST", "http://localhost:8086/upload/usr/server?sliced=false&originSize=" + newFile.size, true); // 메서드와 주소 설정
-			    // http 요청
-			    xhttp.send(formData);   // 요청 전송(formData 전송)
-			 	// XmlHttpRequest의 요청
-			    xhttp.onreadystatechange = function(e){   // 요청에 대한 콜백
-			        // XMLHttpRequest를 이벤트 파라미터에서 취득
-			        const req = e.target;
-			        console.log(req);   // 콘솔 출력
-			
-			        // 통신 상태가 완료가 되면...
-			        if(req.readyState === XMLHttpRequest.DONE) {    // 요청이 완료되면
-			            // Http response 응답코드가 200(정상)이면..
-			            if(req.status === 200) {
-			                console.log("단일 업로드 - 성공")
-			                console.log(xhttp.responseText)
-			            }else{
-			            	console.log("실패")
-			                console.error(xhttp.responseText)
-			            }
-			        }
-			    }
-		 	}
-		 	/* 단일 파일 전송 끝 */
-	    }
-		
-		 
+            // ajax통신 시작
+            startAjax(xhttp, slicedFiles, slicedFileIndex, params, newFileList, newFileListIndex);
+        
+        /* 분할 파일 전송 끝 */
+        }
 	}

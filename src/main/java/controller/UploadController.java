@@ -17,9 +17,25 @@ public class UploadController {
 	
 		public String server(HttpServletRequest request, HttpServletResponse response) throws IOException {
 			
-			// 원본 파일 사이즈
+			// 파일에 대한 정보를 parameter로 받기
+			String guid = request.getParameter("guid");
+			int limitSize = Integer.parseInt(request.getParameter("limitSize"));
+			String originName = request.getParameter("originName");
 			long originSize = Long.parseLong(request.getParameter("originSize"));
-			// multipartRequest로 받을때 최소 제한 용량을 원본 파일 사이즈보다 조금 더 여유 있게 설정..
+			String originType = request.getParameter("originType");
+			int index = Integer.parseInt(request.getParameter("index"));
+			int slicedFilesLength = Integer.parseInt(request.getParameter("slicedFilesLength"));
+			
+			// (테스트용)
+			System.out.println("guid : " + guid);
+			System.out.println("limitSize : " + limitSize);
+			System.out.println("originName : " + originName);
+			System.out.println("originSize : " + originSize);
+			System.out.println("originType : " + originType);
+			System.out.println("index : " + index);
+			System.out.println("slicedFilesLength : " + slicedFilesLength);
+
+			// multipartRequest로 파일 생성시 용량
 			int sizeLimit = 10 * 1024 * 1024; // 약 10MB
 			String encType = "UTF-8";
 
@@ -54,23 +70,6 @@ public class UploadController {
 			
 			// 분할 파일인 경우...
 			if(isSliced != null && isSliced.equals("true")) {
-				
-				// 파일에 대한 정보를 parameter로 받기
-				String guid = request.getParameter("guid");
-				int limitSize = Integer.parseInt(request.getParameter("limitSize"));
-				String originName = request.getParameter("originName");
-				String originType = request.getParameter("originType");
-				int index = Integer.parseInt(request.getParameter("index"));
-				int slicedFilesLength = Integer.parseInt(request.getParameter("slicedFilesLength"));
-				
-				// (테스트용)
-				System.out.println("guid : " + guid);
-				System.out.println("limitSize : " + limitSize);
-				System.out.println("originName : " + originName);
-				System.out.println("originSize : " + originSize);
-				System.out.println("originType : " + originType);
-				System.out.println("index : " + index);
-				System.out.println("slicedFilesLength : " + slicedFilesLength);
 				
 				// 분할 파일을 담을 실제 파일 경로
 				String NewFileLocation = realPath + "\\" + guid;

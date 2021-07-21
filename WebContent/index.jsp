@@ -55,7 +55,7 @@
                             	<button type="button" id="button_add" onclick="selectFiles()">
                             		<span>파일추가</span>
                             	</button>
-                            	<button type="button" id="button_send" onclick="startUpload(event)">
+                            	<button type="button" id="button_send" onclick="startUpload(0)">
                             		<span>전송하기</span>
                             	</button>
                                 <button type="button">
