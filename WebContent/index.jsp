@@ -63,6 +63,9 @@
                                 <button type="button">
                                     <span>전체 제거</span>
                                 </button>
+                                <button type="button" id="button_cancel" onclick="cancelUpload()">
+                            		<span>업로드 중단</span>
+                            	</button>
                             </td>
                         </tr>
                     </tbody>
