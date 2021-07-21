@@ -27,7 +27,6 @@
             </div>
             <div id="upload_area" class="upload_area">
 				<input id="fileInput" type='file' onchange="setUploadFiles(event)" name='userfile' multiple style="display: none;">
-				
 				<ul class="uploadZone" id="uploadZone"></ul>
             </div>
             <div id="info_area" class="info_area">

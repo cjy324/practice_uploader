@@ -27,7 +27,7 @@
         
 	 	for(let i = 0; i < files.length; i++) {
 		 	fileListLi += "<li>";
-		 	fileListLi += "<input id='chk_file_" + [i] + "' type='checkbox'  value='false'>";
+		 	fileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' value='false'>";
 		 	fileListLi += "<span>" + files[i].name + "</span>";
 		 	fileListLi += "<span> " + files[i].size + " Byte</span>";
 		 	fileListLi += "</li>";
