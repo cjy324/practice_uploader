@@ -22,9 +22,11 @@ a{
 }
 .top_area{
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
     height: 30px;
+    padding-left: 10px;
+    padding-right: 15px;
 }
 .upload_area{
     height: 206px;
@@ -37,11 +39,25 @@ a{
 	height: 100%;
 	border: 2px solid;
 	z-index: 500;
+	padding-left: 7px;
+    padding-right: 7px;
+}
+.uploadZone > span{
+	text-align: center;
+	padding-top: 50px;
+}
+.uploadZone > li{
+	display: flex;
+	justify-content: space-between;
+}
+.uploadZone > li > span{
+	font-weight: bold; 
 }
 
 .info_area{
-    height: 29px;
+    height: 24px;
     border-bottom: solid rgb(167, 167, 167) 1px;
+    padding-top: 5px;
 }
 .info_area > ul{
     display: flex;
@@ -57,12 +73,28 @@ a{
 
 .uploaded_body{
     display: inline-block;
-    height: 300px;
+    height: 200px;
+    padding-top: 5px;
     width: 70%;
     border: solid black 3px;
     border-radius: 5px;
 }
-.uploaded_frame{
+.uploadedZone{
 	height: 100%;
-    width: 100%;
+	z-index: 500;
+	padding-left: 7px;
+    padding-right: 7px;
 }
+.uploadedZone > span{
+	text-align: center;
+	padding-top: 50px;
+}
+.uploadedZone > li{
+	display: flex;
+	justify-content: space-between;
+}
+.uploadedZone > li > span{
+	font-weight: bold; 
+}
+
+

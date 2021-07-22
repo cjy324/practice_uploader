@@ -14,20 +14,29 @@
             <h1>UPLOADER</h1>
         </div>
         <div id="progressBarZone">
-        	<progress id='allProgressBar' value='0' max='100' style='width:70%'></progress>
+        	<span style="font-size: 14px;">총 진행률</span>
+        	<progress id='allFilesProgressBar' value='0' max='100' style='width:50%'></progress>
+        	<p id="allFilesMessage" style="font-weight: bold;"></p>
+        	<span style="font-size: 14px;">파일별 총 진행률</span>
+        	<progress id='allProgressBar' value='0' max='100' style='width:50%'></progress>
         	<p id="allMessage"></p>
-	        <progress id="progressBar" value="0" max="100" style="width:70%"></progress>
+        	<span style="font-size: 14px;">분할파일별 진행률</span>
+	        <progress id="progressBar" value="0" max="100" style="width:50%"></progress>
 	        <p id="message"></p>
         </div>
         <div class="uploader_body">
             <div id="top_area" class="top_area">
-                <input type="checkbox">
+                <input type="checkbox" checked="checked">
                 <div>파일 이름</div>
                 <div>파일 크기</div>
             </div>
             <div id="upload_area" class="upload_area">
 				<input id="fileInput" type='file' onchange="setUploadFiles(event)" name='userfile' multiple style="display: none;">
-				<ul class="uploadZone" id="uploadZone"></ul>
+				<ul class="uploadZone" id="uploadZone">
+					<li style="height:100%; justify-content: center; align-items: center;">
+						<span style="font-weight: normal; color: blue; font-size: 12px;">이곳에 파일을 Drag & Drop 하세요.</span>
+					</li>
+				</ul>
             </div>
             <div id="info_area" class="info_area">
                 <ul>
@@ -57,12 +66,12 @@
                             	<button type="button" id="button_send" onclick="startUpload(0)">
                             		<span>전송하기</span>
                             	</button>
-                                <button type="button">
+                                <!-- <button type="button">
                                     <span>항목제거</span>
                                 </button>
                                 <button type="button">
                                     <span>전체 제거</span>
-                                </button>
+                                </button> -->
                                 <button type="button" id="button_cancel" onclick="cancelUpload()">
                             		<span>업로드 중단</span>
                             	</button>
@@ -72,8 +81,11 @@
                 </table>
             </div>
         </div>
+        <div class="title_bar">
+            <h5>UPLOADED FILE LIST</h5>
+        </div>
  		<div id="uploaded_body" class="uploaded_body">
-    		<!-- <iframe class="uploaded_frame" src="fileUpload.jsp" frameborder="0"></iframe> -->
+    		<ul id="uploadedZone" class="uploadedZone"></ul>
     	</div>
     </section>
 </body>
