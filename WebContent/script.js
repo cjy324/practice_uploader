@@ -5,6 +5,7 @@
 	//태그 가져오기
 	const fileInput = document.getElementById("fileInput");
 	const uploadZone = document.getElementById("uploadZone");
+    const infoZone = document.getElementById("current_file_info");
     const progressBarZone = document.getElementById("progressBarZone");
 	const progressBar = document.getElementById("progressBar");
     const allProgressBar = document.getElementById("allProgressBar");
@@ -28,7 +29,7 @@
 	//업로드 될 파일리스트 그리기
 	function showFiles(files) {
 		
-		let fileListLi = ""	// dropZone에 drop한 파일별 태그 생성
+		let fileListLi = "";	// dropZone에 drop한 파일별 태그 생성
         
 	 	for(let i = 0; i < files.length; i++) {
 		 	fileListLi += "<li>";
@@ -39,6 +40,22 @@
 		}
 		
 		uploadZone.innerHTML = fileListLi;
+
+        let filesSize = 0;
+        let fileListInfo = "";
+            fileListInfo += "<span>";
+            fileListInfo += files.length;
+            fileListInfo += "</span>개 , ";
+            fileListInfo += "<span>";
+            for(let k = 0; k < files.length; k++){
+                filesSize += files[k].size; 
+            }
+            fileListInfo += filesSize;
+            fileListInfo += " byte </span>";
+            fileListInfo += "<span>추가됨</span>";
+
+
+        infoZone.innerHTML = fileListInfo;
 	}
 	
 	//파일 업로드를 위한 데이터 셋팅(from Input)
