@@ -17,6 +17,8 @@
 
     // ajax 통신을 하기 위한 XmlHttpRequest 객체 생성
 	const xhttp = new XMLHttpRequest();
+    // ajax 통신이 중단됐는지 여부를 알 수 있는 indicator 변수 선언
+    let indicator = false; // 기본값 false
 	
 	//버튼으로 파일추가input 불러오기
 	function selectFiles() {
@@ -87,6 +89,9 @@
     // ajax통신
     function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileList, newFileListIndex){
 
+        console.log("indicator22222: " + indicator);
+        console.log(newFileList[newFileListIndex].name + " file" + "[" + Number(slicedFileIndex+1) + "]" + "업로드 시작");
+        
         /* progressBar 시작 */
         xhttp.upload.onloadstart = function (e) {
             progressBar.value = 0;
@@ -153,37 +158,44 @@
             // 통신 상태가 완료가 되면...
             if(req.readyState === 4) {    // 요청이 완료되면
                 // Http response 응답코드가 200(정상)
-                // states = 0 unintialized 요청이 초기화 안 된 상태
-                // 1=loaded 서버 연결 설정된 상태
-                // 2=loading 요청 접수된 상태
+                // states = 0 unintialized 요청이 초기화 안 된 상태, open() not called yet.
+                // 1=loaded 서버 연결 설정된(열린) 상태, open() has been called.
+                // 2=loading 요청 접수된 상태, send() has been called
                 // 3=interactive 요청 처리 중 상태
                 // 4=complete 요청 완료되고 응답 준비된 상태
-                if(req.status === 200) {
+                if(req.status === 200 && indicator == true) {
+                    console.log("indicator33333333: " + indicator);
+                    
                     if(slicedFileIndex < slicedFiles.length-1){ // 만약, index가 slicedFiles.length 보다 작으면
                         slicedFileIndex++; // index 1 증가
                         // 재귀함수: 함수 내에서 자신을 다시 호출
                         startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileList, newFileListIndex);
-                        console.log(newFileList[newFileListIndex].name + " file" + "[" + Number(slicedFileIndex+1) + "]" + "업로드 시작");
                     }
                     else if(newFileListIndex < newFileList.length-1){
                         newFileListIndex++;
                         console.log(newFileList[newFileListIndex].name + " file 업로드 시작");  
                         startUpload(newFileListIndex);
+                    }else{
+                        console.log(newFileList[newFileListIndex].name + " file" + "업로드 - 종료")
                     }              
-                    console.log("업로드 - 성공")
-                    console.log(xhttp.responseText)
+                    //console.log(xhttp.responseText)
+                }else if(req.status === 200 && indicator == false && slicedFileIndex < slicedFiles.length-1){
+                    console.log("indicator444444: " + indicator);
+                    console.log("---업로드 중단---")
+                    console.log("----LocalStorage에 현재 파일 정보 저장 시작----")
+                    // 업로드시 여러 파일이 중단될 수도 있으니 
+                    // 여러 파일이 중단될 경우를 고려해서
+                    // loacalStorage에 담을때 구분자, 배열 등을 활용해 잘 저장해 놓는 것이 중요
+                    // 나중에 이어올리기시 localStorage에 있는 해당 키들을 for문으로 돌리면서 일치하는 값 찾을 수 있도록 하기 위함..
+                    localStorage.setItem("resume_upload_" + guid, guid + "__" + slicedFileIndex + "__" + newFileList[newFileListIndex].name + "__" + newFileList[newFileListIndex].size);
+                    console.log("resume_upload_" + guid + " : " + guid + "__" + slicedFileIndex + "__" + newFileList[newFileListIndex].name + "__" + newFileList[newFileListIndex].size);
+                    console.log("----LocalStorage에 현재 파일 정보 저장 완료----")
+                    //console.log(xhttp.responseText)
+                }else if(req.status === 200 && indicator == false && slicedFileIndex == slicedFiles.length-1){
+                    console.log("이미 \"" + newFileList[newFileListIndex].name + "\" file의 업로드가 완료되었습니다.");  
                 }else{
-                    console.log("통신 중단")
-                    console.log("----로컬스토리지에 현재 파일 정보 저장 시작----")
-                    localStorage.setItem("GUID", guid);
-                    localStorage.setItem("INDEX", slicedFileIndex);
-                    localStorage.setItem("OriginFileName", newFileList[newFileListIndex].name);
-                    localStorage.setItem("OriginFileSize", newFileList[newFileListIndex].size);
-                    console.log("---GUID: " + guid);
-                    console.log("---INDEX: " + slicedFileIndex);
-                    console.log("---OriginFileName: " + newFileList[newFileListIndex].name);
-                    console.log("---OriginFileSize: " + newFileList[newFileListIndex].size);
-                    console.log("----로컬스토리지에 현재 파일 정보 저장 완료----")
+                    console.log("통신 실패")
+                    console.error("req.status: " + req.status)
                     console.error(xhttp.responseText)
                 }
             }
@@ -194,8 +206,10 @@
 	//파일 업로드
 	function startUpload(newFileListIndex){
 
+        indicator = true;
+        console.log("indicator1111: " + indicator);
         console.log("startUpload--------------- newFileListIndex: " + newFileListIndex + " ---------------");  
-                
+
         // 단일 파일 제한 용량 설정
         // Tomcat은 기본적으로 Post로 전송할 데이터의 크기를 최대2MB까지 Default로 잡고있다.
         // https://youngram2.tistory.com/110
@@ -264,29 +278,30 @@
             }
     
             let guid = createGuid();
+        
+            // 기존 업로드 중단된 파일 정보들 확인
+            // key: "resume_upload_" + guid
+            // vlaue: guid + "__" + slicedFileIndex + "__" + newFileList[newFileListIndex].name + "__" + newFileList[newFileListIndex].size
+            // 구분자: __
+            let canceledFileName;
+            let canceledFileSize;
+            if(localStorage.length > 0){
+                console.log("localStorage.length : " + localStorage.length);
+                for(let l = 0; l < localStorage.length; l++){
+                    console.log("localStorage.getItem(localStorage.key(l)) : " + localStorage.getItem(localStorage.key(l)));
+                    canceledFileName = localStorage.getItem(localStorage.key(l)).split("__")[2];
+                    canceledFileSize = localStorage.getItem(localStorage.key(l)).split("__")[3];
 
-            // 기존 업로드 중단 파일 정보 확인
-            const canceledFileGuid = localStorage.getItem("GUID");
-            const canceledFileIndex = localStorage.getItem("INDEX");
-            const canceledFileName = localStorage.getItem("OriginFileName");
-            const canceledFileSize = localStorage.getItem("OriginFileSize");
-                        
-            // 이어올리기 여부 체크
-            if(canceledFileGuid != null){
-                if(newFileList[newFileListIndex].name == canceledFileName && newFileList[newFileListIndex].size == canceledFileSize){
-                    if(confirm("기존에 업로드된 데이터가 있습니다. 이어서 업로드하시겠습니까?")){
-                        guid = canceledFileGuid;
-                        slicedFileIndex = canceledFileIndex;
-
-                        localStorage.removeItem("GUID");
-                        localStorage.removeItem("INDEX");
-                        localStorage.removeItem("OriginFileName");
-                        localStorage.removeItem("OriginFileSize");
-                    }else{
-                        localStorage.removeItem("GUID");
-                        localStorage.removeItem("INDEX");
-                        localStorage.removeItem("OriginFileName");
-                        localStorage.removeItem("OriginFileSize");
+                    // 이어올리기 여부 체크
+                    if(newFileList[newFileListIndex].name == canceledFileName && newFileList[newFileListIndex].size == canceledFileSize){
+                        if(confirm("기존에 업로드된 데이터가 있습니다. 이어서 업로드하시겠습니까?")){
+                            guid = localStorage.getItem(localStorage.key(l)).split("__")[0];
+                            slicedFileIndex = Number(localStorage.getItem(localStorage.key(l)).split("__")[1]);
+    
+                            localStorage.removeItem(localStorage.key(l));
+                        }else{
+                            localStorage.removeItem(localStorage.key(l));
+                        }
                     }
                 }
             }
@@ -297,6 +312,7 @@
             params += "&slicedFilesLength=" + slicedFiles.length;
 
             // ajax통신 시작
+            console.log("slicedFileIndex: " + slicedFileIndex);
             startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileList, newFileListIndex);
         
         /* 분할 파일 전송 끝 */
@@ -305,5 +321,13 @@
 
     // 업로드 중단 버튼
     function cancelUpload(){
-        xhttp.abort();
+        // // 통신 강제 중단
+        // xhttp.abort();
+        
+        // 만약, abort()를 통해 통신을 강제 중단시켜버리면 업로드 상태가 어떨지 알 수 없기 때문에 위험하다.
+        // 따라서,
+        // 통신 indicator를 false로 변경해서 다음 로직을 타지 않게끔해서 비교적 안전하게 업로드를 중단해준다.
+        indicator = false;
+        console.log("-------------Upload was canceled-------------");
+        console.log("indicatorXXXXXXXXXXXXX: " + indicator);
     }
