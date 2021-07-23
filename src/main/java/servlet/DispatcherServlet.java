@@ -35,7 +35,7 @@ public abstract class DispatcherServlet extends HttpServlet {
 		}
 		// (2) doBeforeActionRs의 결과로 도출된 controllerName, actionMethodName 가져와 usr, adm 서블릿으로 전송
 		// usr, adm 서블릿에서 각 컨트롤들이 요청 수행후 jspPath 리턴
-		String jspPath = doAction(request, response, (String) doBeforeActionRs.get("controllerName"));
+		String jspPath = doAction(request, response, (String) doBeforeActionRs.get("controllerName"), (String) doBeforeActionRs.get("requestName"));
 		if (jspPath == null) {
 			response.getWriter().append("jsp 정보가 없습니다.");
 			return;
@@ -59,22 +59,24 @@ public abstract class DispatcherServlet extends HttpServlet {
 		String[] requestUriBits = requestURI.split("/");
 
 		// 만약, requestURIBits.length가 5보다 작으면
-		// 즉, /upload/jsp/usr/index 와 같은 형식이 아니면 중지
-		int minBitsCount = 4;
+		// 즉, /upload/usr/upload/server 와 같은 형식이 아니면 중지
+		int minBitsCount = 5;
 
 		if (requestUriBits.length < minBitsCount) {
 			response.getWriter().append("잘못된 요청입니다.");
 			return null;
 		}
-
-		String controllerName = requestUriBits[3]; // article or member
+		
+		String controllerName = requestUriBits[3]; // upload or download
+		String requestName = requestUriBits[4]; // server
 	
 		//System.out.println(controllerName);
 
 		Map<String, Object> rs = new HashMap<>();
 		rs.put("controllerName", controllerName);
+		rs.put("requestName", requestName);
 		return rs;
 	}
 
-	protected abstract String doAction(HttpServletRequest request, HttpServletResponse response, String controllerName) throws IOException;
+	protected abstract String doAction(HttpServletRequest request, HttpServletResponse response, String controllerName, String requestName) throws IOException;
 }

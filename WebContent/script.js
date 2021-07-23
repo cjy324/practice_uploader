@@ -1,4 +1,4 @@
-
+/* 업로더 */
 // 태그 가져오기
 const fileInput = document.getElementById("fileInput");
 const uploadZone = document.getElementById("uploadZone");
@@ -123,6 +123,14 @@ function drawUploadedFileList(uploadedFileList){
     uploadedZone.innerHTML = uploadedFileListLi;
 }
 
+// GUID 생성 함수
+function createGuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+    });
+}
+
 // ajax통신
 function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileList, newFileListIndex){
 
@@ -193,9 +201,9 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
 
     // http 요청 타입 / 주소 / 동기식 여부 설정
     if(slicedFiles.length == 0){    // 단일 전송인 경우
-        xhttp.open("POST", "http://localhost:8086/upload/usr/server?index=" + 0 + params, true); // 메서드와 주소 설정    
+        xhttp.open("POST", "http://localhost:8086/upload/usr/upload/server?index=" + 0 + params, true); // 메서드와 주소 설정    
     }else{      // 분할 전송인 경우
-        xhttp.open("POST", "http://localhost:8086/upload/usr/server?index=" + slicedFileIndex + params, true); // 메서드와 주소 설정
+        xhttp.open("POST", "http://localhost:8086/upload/usr/upload/server?index=" + slicedFileIndex + params, true); // 메서드와 주소 설정
     }
     
     // http 요청
@@ -320,14 +328,6 @@ function startUpload(newFileListIndex){
     if(slicedFiles.length > 0){
         console.log("------분할 파일 전송 시작------");
 
-        // GUID 생성
-        function createGuid() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-            });
-        }
-
         let guid = createGuid();
     
         /* 로컬스토리지에 저장된 기존 업로드 중단된 파일 정보들 확인 시작 */
@@ -382,3 +382,105 @@ function cancelUpload(){
     indicator = false;
     console.log("-------------upload cancel-------------");
 }
+
+
+
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* 다운로더 */
+
+// 태그 가져오기
+const downlaodFrame = document.getElementById("download_frame");
+const downloadZone = document.getElementById("downloadZone");
+const downFiles = document.getElementsByName("downFiles");
+
+// 다운로드 파일 정보를 담아놓을 전역변수
+let forDownloadFilelist = [];
+let forDownloadFilelistIndex = 0;
+
+// downloadZone에 그리기
+function drawDownloadFileList(forDownloadFilelist){
+    let forDownloadFileListLi = "";	// uploadedZone에 upload한 파일별 태그 생성
+    
+    for(let i = 0; i < forDownloadFilelist.length; i++) {
+        forDownloadFileListLi += "<li>";
+        forDownloadFileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' name='downFiles' value='false' checked>";
+        forDownloadFileListLi += "<span>" + forDownloadFilelist[i].originFileName + "</span>";
+        forDownloadFileListLi += "<span> " + forDownloadFilelist[i].originFileSize + " Byte</span>";
+        forDownloadFileListLi += "</li>";
+    }
+
+    downloadZone.innerHTML = forDownloadFileListLi;
+}
+
+// DB로 요청 후에 이미 파일 정보를 가져왔다고 가정..
+// 파일 정보 가져와 다운로드 대상리스트 태그 그리기
+// 파일 정보를 가져와서 전역변수에 담아놓기
+function fileLoad(){
+    // DB로부터 아래 형식으로 파일 정보를 받아왔다고 가정
+    const file1 = {
+        originFileName: "테스트이미지.jpg",
+        originFileSize: "14856",
+        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지.jpg"
+    };
+    const file2 = {
+        originFileName: "테스트이미지2.png",
+        originFileSize: "7846",
+        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지2.png"
+    };
+    const file3 = {
+        originFileName: "테스트이미지3.png",
+        originFileSize: "12226",
+        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지3.png"
+    };
+
+    // 전역변수 배열에 담기
+    forDownloadFilelist.push(file1);
+    forDownloadFilelist.push(file2);
+    forDownloadFilelist.push(file3);
+
+    // forDownloadFilelist에 담긴 파일 정보로 태그 그리기
+    drawDownloadFileList(forDownloadFilelist);
+}
+
+
+
+function startDownload(forDownloadFilelistIndex){
+    
+    // url
+    let forDownloadUrl = "http://localhost:8086/upload/usr/download/server?";
+
+    // 선택하지 않은 파일은 대상리스트에서 제외
+    let targetIndex = -1;
+    for(let i = 0; i < downFiles.length; i++){
+        if(!downFiles[i].checked){
+            // alert(downFiles[i].id.split("_")[2] + " not checked!!!!!!");
+            targetIndex = Number(downFiles[i].id.split("_")[2]);
+            for(let k = 0; k < forDownloadFilelist.length; k++){
+                if(targetIndex == k){
+                    forDownloadFilelist.slice(targetIndex,1);
+                    // alert("file_" + targetIndex + "삭제 완료")
+                }
+            }
+        }
+    }
+
+    // 선택된 파일들에 대한 정보 URL로 담기
+    // startDownloadAjax();
+    // 2. iframe에 URL 세팅
+
+    const downFileGuid = createGuid();
+
+    forDownloadUrl += "index=" + forDownloadFilelistIndex;
+    forDownloadUrl += "&guid=" + downFileGuid;
+    forDownloadUrl += "&originName=" + forDownloadFilelist[forDownloadFilelistIndex].originFileName;
+    forDownloadUrl += "&originSize=" + forDownloadFilelist[forDownloadFilelistIndex].originFileSize;
+    forDownloadUrl += "&originPath=" + forDownloadFilelist[forDownloadFilelistIndex].originFilePath;
+
+    downlaodFrame.src = encodeURI(forDownloadUrl);
+
+    
+
+}
+
+

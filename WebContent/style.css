@@ -10,8 +10,10 @@ a{
 }
 
 /* 커스터마이징 */
+/* 업로더 */
 .main_section{
     text-align: center;
+    margin-bottom: 50px;
 }
 .uploader_body{
     display: inline-block;
@@ -73,7 +75,7 @@ a{
 
 .uploaded_body{
     display: inline-block;
-    height: 200px;
+    height: 100px;
     padding-top: 5px;
     width: 70%;
     border: solid black 3px;
@@ -97,4 +99,36 @@ a{
 	font-weight: bold; 
 }
 
-
+/* 다운로더 */
+.downloader_body{
+    display: inline-block;
+    height: 300px;
+    width: 70%;
+    border: solid black 3px;
+    border-radius: 5px;
+}
+.download_area{
+    height: 206px;
+    width: 100%;
+    text-align: left;  
+    border-top: solid rgb(167, 167, 167) 2px;
+    border-bottom: solid rgb(167, 167, 167) 2px;
+}
+.downloadZone{
+	height: 100%;
+	border: 2px solid;
+	z-index: 500;
+	padding-left: 7px;
+    padding-right: 7px;
+}
+.downloadZone > span{
+	text-align: center;
+	padding-top: 50px;
+}
+.downloadZone > li{
+	display: flex;
+	justify-content: space-between;
+}
+.downloadZone > li > span{
+	font-weight: bold; 
+}

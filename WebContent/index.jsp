@@ -6,10 +6,11 @@
 <meta charset="UTF-8">
 <link rel="stylesheet" href="style.css">
 <script defer src="script.js"></script>
-<title>UPLOADER</title>
+<title>UPLOADER & DOWNLOADER</title>
 </head>
 <body>
 	<section class="main_section">
+		<!-- UPLOADER -->
         <div class="title_bar">
             <h1>UPLOADER</h1>
         </div>
@@ -81,6 +82,50 @@
  		<div id="uploaded_body" class="uploaded_body">
     		<ul id="uploadedZone" class="uploadedZone"></ul>
     	</div>
+    	
+    	
+    	<!-- DOWNLOADER -->
+    	<p>-------------------------------------------------------------------------------------</p>
+    	<div class="title_bar">
+            <h1>DOWNLOADER</h1>
+        </div>
+        <div class="downloader_body">
+            <div id="top_area" class="top_area">
+                <input type="checkbox" checked="checked">
+                <div>파일 이름</div>
+                <div>파일 크기</div>
+            </div>
+            <div id="download_area" class="download_area">
+				<ul id="downloadZone" class="downloadZone"></ul>
+            </div>
+            <div id="info_area" class="info_area">
+                <ul>
+                    <li id="current_file_info" class="current_file_info">
+                        <span>3</span>
+                        개 ,
+                        <span>230000 byte</span>
+                        <span>추가됨</span>
+                    </li>
+                </ul>
+            </div>
+            <div id="btn_area" class="btn_area">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                            	<button id="button_load" type="button" onclick="fileLoad()">
+                            		<span>파일추가</span>
+                            	</button>
+                            	<button id="button_down" type="button" onclick="startDownload(0)">
+                            		<span>다운로드</span>
+                            	</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <iframe id="download_frame" name="download_frame" style="display: none;" src=""></iframe>
     </section>
 </body>
 </html>
