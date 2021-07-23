@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 public class HomeController {
 
 	// 홈 메인화면
-	public String index(HttpServletRequest request, HttpServletResponse response) {
+	public String home(HttpServletRequest request, HttpServletResponse response) {
 		System.out.println("들어오긴 함???");
 		return "usr/index";
 	}

@@ -19,15 +19,15 @@ public class UsrDispatcherServlet extends DispatcherServlet {
 
 		String jspPath = null;
 
-		if (controllerName.equals("index")) {
-			HomeController homeController = Container.homeController;
-			jspPath = homeController.index(request, response);
-		}
+		/*
+		 * if (controllerName.equals("home")) { HomeController homeController =
+		 * Container.homeController; jspPath = homeController.index(request, response);
+		 * }
+		 */
 		if (controllerName.equals("server")) {
 			UploadController uploadController = Container.uploadController;
 			jspPath = uploadController.server(request, response);
 		}
-
 
 		return jspPath;
 
