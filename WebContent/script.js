@@ -443,12 +443,30 @@ function fileLoad(){
     drawDownloadFileList(forDownloadFilelist);
 }
 
-
-
-function startDownload(forDownloadFilelistIndex){
-    
+function startIframRequest(forDownloadFilelistIndex, forDownloadFilelist){
+    // 선택된 파일들에 대한 정보 URL로 담기
+    // startDownloadAjax();
+    // 2. iframe에 URL 세팅
     // url
     let forDownloadUrl = "http://localhost:8086/upload/usr/download/server?";
+    let downFileGuid = createGuid();
+
+    forDownloadUrl += "index=" + forDownloadFilelistIndex;
+    forDownloadUrl += "&guid=" + downFileGuid;
+    forDownloadUrl += "&originName=" + forDownloadFilelist[forDownloadFilelistIndex].originFileName;
+    forDownloadUrl += "&originSize=" + forDownloadFilelist[forDownloadFilelistIndex].originFileSize;
+    forDownloadUrl += "&originPath=" + forDownloadFilelist[forDownloadFilelistIndex].originFilePath;
+
+    downlaodFrame.src = encodeURI(forDownloadUrl);
+    // encodeURI 참고 : https://jamesdreaming.tistory.com/2
+
+    // if(forDownloadFilelistIndex !== forDownloadFilelist.length-1){
+    //     forDownloadFilelistIndex++;
+    //     startIframRequest(forDownloadFilelistIndex, forDownloadFilelist);
+    // }
+}
+
+function startDownload(forDownloadFilelistIndex){
 
     // 선택하지 않은 파일은 대상리스트에서 제외
     let targetIndex = -1;
@@ -465,22 +483,7 @@ function startDownload(forDownloadFilelistIndex){
         }
     }
 
-    // 선택된 파일들에 대한 정보 URL로 담기
-    // startDownloadAjax();
-    // 2. iframe에 URL 세팅
-
-    const downFileGuid = createGuid();
-
-    forDownloadUrl += "index=" + forDownloadFilelistIndex;
-    forDownloadUrl += "&guid=" + downFileGuid;
-    forDownloadUrl += "&originName=" + forDownloadFilelist[forDownloadFilelistIndex].originFileName;
-    forDownloadUrl += "&originSize=" + forDownloadFilelist[forDownloadFilelistIndex].originFileSize;
-    forDownloadUrl += "&originPath=" + forDownloadFilelist[forDownloadFilelistIndex].originFilePath;
-
-    downlaodFrame.src = encodeURI(forDownloadUrl);
-
-    
-
+    startIframRequest(forDownloadFilelistIndex, forDownloadFilelist);
 }
 
 

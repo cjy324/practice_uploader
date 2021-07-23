@@ -1,6 +1,11 @@
 package controller;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +27,42 @@ public class DownloadController {
 			System.out.println("originName : " + originName);
 			System.out.println("originSize : " + originSize);
 			System.out.println("originPath : " + originPath);
+			
+			/* HTTP 헤더 셋팅 시작 */
+			response.reset();
+			
+			// IE체크
+			if(request.getHeader("User-Agent").indexOf("MSIE5.0") > -1) {
+				// IE가 아닌 경우
+				response.setHeader("Content-Type", "dosen/matter;");
+			}else {
+				// IE인 경우
+				response.setHeader("Content-Type", "application/unknown");
+			}
+			response.setHeader("Content-Disposition",
+	                "attachment; filename=\"" + URLEncoder.encode(originName, "UTF-8") + "\"");
+			/* HTTP 헤더 셋팅 끝 */
+			
+			
+			/* 파일 다운로드(브라우저로 전송) 시작 */
+			File file = new File(originPath);
+			int read = 0;
+			
+			byte[] bytes = new byte[(int) originSize];
+			
+			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+			OutputStream bos = response.getOutputStream();
+			// 파일 읽어서 브라우저로 출력
+			while((read=bis.read(bytes)) != -1) {
+				bos.write(bytes, 0, read);
+			}
+			
+			bis.close();
+			bos.flush();
+			bos.close();
+			/* 파일 다운로드(브라우저로 전송) 끝 */
+			
+			
 			
 			return null;
 		}
