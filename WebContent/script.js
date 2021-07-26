@@ -421,17 +421,20 @@ function fileLoad(){
     const file1 = {
         originFileName: "테스트이미지.jpg",
         originFileSize: "14856",
-        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지.jpg"
+        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지.jpg",
+        originFileType: "image/jpeg"
     };
     const file2 = {
         originFileName: "테스트이미지2.png",
         originFileSize: "7846",
-        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지2.png"
+        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지2.png",
+        originFileType: "image/png"
     };
     const file3 = {
         originFileName: "테스트이미지3.png",
         originFileSize: "12226",
-        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지3.png"
+        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지3.png",
+        originFileType: "image/png"
     };
 
     // 전역변수 배열에 담기
@@ -456,6 +459,7 @@ function startIframRequest(forDownloadFilelistIndex, forDownloadFilelist){
     forDownloadUrl += "&originName=" + forDownloadFilelist[forDownloadFilelistIndex].originFileName;
     forDownloadUrl += "&originSize=" + forDownloadFilelist[forDownloadFilelistIndex].originFileSize;
     forDownloadUrl += "&originPath=" + forDownloadFilelist[forDownloadFilelistIndex].originFilePath;
+    forDownloadUrl += "&originType=" + forDownloadFilelist[forDownloadFilelistIndex].originFileType;
 
     downlaodFrame.src = encodeURI(forDownloadUrl);
     // encodeURI 참고 : https://jamesdreaming.tistory.com/2
@@ -486,8 +490,3 @@ function startDownload(forDownloadFilelistIndex){
     startIframRequest(forDownloadFilelistIndex, forDownloadFilelist);
 }
 
-
-
-
-// 21.07.23
-// MIME TYPE 정보 가져오기 구현(파라미터로 전송 필요)

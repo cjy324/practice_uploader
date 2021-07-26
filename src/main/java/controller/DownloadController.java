@@ -5,10 +5,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URLEncoder;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,6 +20,7 @@ public class DownloadController {
 			String originName = request.getParameter("originName");
 			long originSize = Long.parseLong(request.getParameter("originSize"));
 			String originPath = request.getParameter("originPath");
+			String originType = request.getParameter("originType");
 			
 			// (테스트용)
 			System.out.println("index : " + index);
@@ -29,6 +28,7 @@ public class DownloadController {
 			System.out.println("originName : " + originName);
 			System.out.println("originSize : " + originSize);
 			System.out.println("originPath : " + originPath);
+			System.out.println("originType : " + originType);
 			
 			/* HTTP 헤더 셋팅 시작 */
 			response.reset();
@@ -52,21 +52,15 @@ public class DownloadController {
 			
 			byte[] bytes = new byte[(int) originSize];
 			
-			
-			
-			response.getOutputStream().close();
 			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-			ServletOutputStream sos = response.getOutputStream();
-			BufferedOutputStream bos = new BufferedOutputStream(sos);
+			BufferedOutputStream bos = new BufferedOutputStream(response.getOutputStream());
 			// 파일 읽어서 브라우저로 출력
 			while((read=bis.read(bytes)) != -1) {
 				bos.write(bytes, 0, read);
 			}
 			
 			bos.flush();
-			
 			bis.close();
-			sos.close();
 			bos.close();
 			/* 파일 다운로드(브라우저로 전송) 끝 */
 			
