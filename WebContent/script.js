@@ -487,3 +487,7 @@ function startDownload(forDownloadFilelistIndex){
 }
 
 
+
+
+// 21.07.23
+// MIME TYPE 정보 가져오기 구현(파라미터로 전송 필요)

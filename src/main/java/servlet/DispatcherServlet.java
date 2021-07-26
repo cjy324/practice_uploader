@@ -36,13 +36,15 @@ public abstract class DispatcherServlet extends HttpServlet {
 		// (2) doBeforeActionRs의 결과로 도출된 controllerName, actionMethodName 가져와 usr, adm 서블릿으로 전송
 		// usr, adm 서블릿에서 각 컨트롤들이 요청 수행후 jspPath 리턴
 		String jspPath = doAction(request, response, (String) doBeforeActionRs.get("controllerName"), (String) doBeforeActionRs.get("requestName"));
+		System.out.println("최종 jspPath: " + jspPath);
+		
 		if (jspPath == null) {
 			response.getWriter().append("jsp 정보가 없습니다.");
 			return;
 		}
-		// (3) (1),(2)의 결과로 도출된 jspPath를 받고 forward 수행
-		RequestDispatcher rd = request.getRequestDispatcher("/jsp/" + jspPath + ".jsp");
-		rd.forward(request, response);
+//		// (3) (1),(2)의 결과로 도출된 jspPath를 받고 forward 수행
+//		RequestDispatcher rd = request.getRequestDispatcher(jspPath + ".jsp");
+//		rd.forward(request, response);
 		
 	}
 

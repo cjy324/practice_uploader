@@ -1,12 +1,14 @@
 package controller;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,20 +52,26 @@ public class DownloadController {
 			
 			byte[] bytes = new byte[(int) originSize];
 			
+			
+			
+			response.getOutputStream().close();
 			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-			OutputStream bos = response.getOutputStream();
+			ServletOutputStream sos = response.getOutputStream();
+			BufferedOutputStream bos = new BufferedOutputStream(sos);
 			// 파일 읽어서 브라우저로 출력
 			while((read=bis.read(bytes)) != -1) {
 				bos.write(bytes, 0, read);
 			}
 			
-			bis.close();
 			bos.flush();
+			
+			bis.close();
+			sos.close();
 			bos.close();
 			/* 파일 다운로드(브라우저로 전송) 끝 */
 			
 			
 			
-			return null;
+			return "download";
 		}
 }
