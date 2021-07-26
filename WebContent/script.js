@@ -418,22 +418,23 @@ function drawDownloadFileList(forDownloadFilelist){
 // 파일 정보를 가져와서 전역변수에 담아놓기
 function fileLoad(){
     // DB로부터 아래 형식으로 파일 정보를 받아왔다고 가정
+
     const file1 = {
+        originFileName: "test1.zip",
+        originFileSize: "3432864",
+        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\test1.zip",
+        originFileType: "application/zip"
+    };
+    const file2 = {
         originFileName: "테스트이미지.jpg",
         originFileSize: "14856",
         originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지.jpg",
         originFileType: "image/jpeg"
     };
-    const file2 = {
+    const file3 = {
         originFileName: "테스트이미지2.png",
         originFileSize: "7846",
         originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지2.png",
-        originFileType: "image/png"
-    };
-    const file3 = {
-        originFileName: "테스트이미지3.png",
-        originFileSize: "12226",
-        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지3.png",
         originFileType: "image/png"
     };
 
@@ -472,20 +473,23 @@ function startIframRequest(forDownloadFilelistIndex, forDownloadFilelist){
 
 function startDownload(forDownloadFilelistIndex){
 
-    // 선택하지 않은 파일은 대상리스트에서 제외
+    // 21.07.26 
+    // 선택하지 않은 파일은 대상리스트에서 제외 로직 구현 필요
     let targetIndex = -1;
     for(let i = 0; i < downFiles.length; i++){
         if(!downFiles[i].checked){
-            // alert(downFiles[i].id.split("_")[2] + " not checked!!!!!!");
+            alert(downFiles[i].id.split("_")[2] + " not checked!!!!!!");
             targetIndex = Number(downFiles[i].id.split("_")[2]);
             for(let k = 0; k < forDownloadFilelist.length; k++){
                 if(targetIndex == k){
-                    forDownloadFilelist.slice(targetIndex,1);
-                    // alert("file_" + targetIndex + "삭제 완료")
+                    forDownloadFilelist.splice(targetIndex, 1);
+                    alert("file_" + targetIndex + "삭제 완료")
                 }
             }
         }
     }
+    
+    //alert("forDownloadFilelist.length : " + forDownloadFilelist.length)
 
     startIframRequest(forDownloadFilelistIndex, forDownloadFilelist);
 }
