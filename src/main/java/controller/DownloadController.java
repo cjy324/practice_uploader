@@ -13,6 +13,7 @@ import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 
 public class DownloadController {
@@ -108,8 +109,6 @@ public class DownloadController {
 
 			/* 파일 다운로드(브라우저로 전송) 끝 */
 			
-			
-			
 			return "download";
 		}
 		
@@ -156,7 +155,6 @@ public class DownloadController {
 			
 			raf.close();
 			/* 파일 다운로드 프로그래스바 출력 끝 */
-			
 			
 			
 			return "download";

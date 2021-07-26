@@ -476,6 +476,7 @@ function checkDownProgress(downFileGuid){
             // 4=complete 요청 완료되고 응답 준비된 상태
             if(req2.status === 200) {
                 console.log("------통신 성공------");
+                console.log(xhttp2.responseText);
             }else{
                 console.error("------통신 실패------");
                 console.error("req2.status: " + req2.status);
