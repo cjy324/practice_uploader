@@ -432,10 +432,10 @@ function fileLoad(){
         originFileType: "image/jpeg"
     };
     const file3 = {
-        originFileName: "테스트이미지2.png",
-        originFileSize: "7846",
-        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지2.png",
-        originFileType: "image/png"
+        originFileName: "테스트영상.mp4",
+        originFileSize: "73061740",
+        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트영상.mp4",
+        originFileType: "video/mp4"
     };
 
     // 전역변수 배열에 담기
@@ -447,6 +447,48 @@ function fileLoad(){
     drawDownloadFileList(forDownloadFilelist);
 }
 
+// 현재 다운로드 진행률 모니터링
+function checkDownProgress(downFileGuid){
+    
+    const xhttp2 = xhttp;
+
+    /* ajax통신 시작 */
+
+    // http 요청 타입 / 주소 / 동기식 여부 설정
+    xhttp2.open("POST", "http://localhost:8086/upload/usr/download/progress?guid=" + downFileGuid, true); // 메서드와 주소 설정    
+    // http 요청
+    xhttp2.send();   // 요청 전송
+
+    // XmlHttpRequest의 요청
+    // 통신 상태 모니터링
+    xhttp2.onreadystatechange = function(e){   // 요청에 대한 콜백
+        // XMLHttpRequest를 이벤트 파라미터에서 취득
+        const req2 = e.target;
+        console.log(req2);   // 콘솔 출력
+
+        // 통신 상태가 완료가 되면...
+        if(req2.readyState === 4) {    // 요청이 완료되면
+            // Http response 응답코드가 200(정상)
+            // states = 0 unintialized 요청이 초기화 안 된 상태, open() not called yet.
+            // 1=loaded 서버 연결 설정된(열린) 상태, open() has been called.
+            // 2=loading 요청 접수된 상태, send() has been called
+            // 3=interactive 요청 처리 중 상태
+            // 4=complete 요청 완료되고 응답 준비된 상태
+            if(req2.status === 200) {
+                console.log("------통신 성공------");
+            }else{
+                console.error("------통신 실패------");
+                console.error("req2.status: " + req2.status);
+                console.error(xhttp2.responseText);
+            }
+        }
+    }
+    /* ajax통신 끝 */
+    
+
+}
+
+// iframe으로 다운로드 요청 보내기
 function startIframRequest(forDownloadFilelistIndex, forDownloadFilelist){
     // 선택된 파일들에 대한 정보 URL로 담기
     // startDownloadAjax();
@@ -465,12 +507,24 @@ function startIframRequest(forDownloadFilelistIndex, forDownloadFilelist){
     downlaodFrame.src = encodeURI(forDownloadUrl);
     // encodeURI 참고 : https://jamesdreaming.tistory.com/2
 
+
+    // setInterval(타겟함수,설정시간) 함수는 주기적으로 인자를 실행하는 함수
+    // 일정한 시간 간격으로 작업을 수행하기 위해서 사용
+    // clearInterval 함수를 사용하여 중지
+    // 지정된 작업은 모두 실행되고 다음 작업 스케쥴이 중지
+    setInterval(function(){
+        checkDownProgress(downFileGuid)
+    }, 200);  // 1초 = 1000
+
+    
+
     // if(forDownloadFilelistIndex !== forDownloadFilelist.length-1){
     //     forDownloadFilelistIndex++;
     //     startIframRequest(forDownloadFilelistIndex, forDownloadFilelist);
     // }
 }
 
+// 다운로드 시작
 function startDownload(forDownloadFilelistIndex){
 
     // 21.07.26 
@@ -491,6 +545,8 @@ function startDownload(forDownloadFilelistIndex){
     
     //alert("forDownloadFilelist.length : " + forDownloadFilelist.length)
 
-    startIframRequest(forDownloadFilelistIndex, forDownloadFilelist);
+    startIframRequest(2, forDownloadFilelist);
 }
+
+
 
