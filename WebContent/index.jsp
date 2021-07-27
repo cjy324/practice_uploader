@@ -18,9 +18,11 @@
             <h1>UPLOADER</h1>
         </div>
         <div id="progressBarZone">
+        	<p id="allFilesMessage" style="font-weight: bold;"></p>
         	<span style="font-size: 14px;">총 진행률</span>
         	<progress id='allFilesProgressBar' value='0' max='100' style='width:50%'></progress>
-        	<p id="allFilesMessage" style="font-weight: bold;"></p>
+        	<br/>
+        	<br/>
         	<span style="font-size: 14px;">파일별 총 진행률</span>
         	<progress id='allProgressBar' value='0' max='100' style='width:50%'></progress>
         	<p id="allMessage"></p>
@@ -67,7 +69,7 @@
                             	<button type="button" id="button_add" onclick="selectFiles()">
                             		<span>파일추가</span>
                             	</button>
-                            	<button type="button" id="button_send" onclick="startUpload(0)">
+                            	<button type="button" id="button_send" onclick="setUploadFileList()">
                             		<span>전송하기</span>
                             	</button>
                                 <button type="button" id="button_cancel" onclick="cancelUpload()">
@@ -128,10 +130,12 @@
                 </table>
             </div>
         </div>
-        <div id="progressBarZone_down">
+        <div id="progressBarZone_down" style="margin: 20px;">
+        	<p id="allFilesMessage_down" style="font-weight: bold;"></p>
         	<span style="font-size: 14px;">총 진행률</span>
         	<progress id='allFilesProgressBar_down' value='0' max='100' style='width:50%'></progress>
-        	<p id="allFilesMessage_down" style="font-weight: bold;"></p>
+        	<br/>
+        	<br/>
         	<span style="font-size: 14px;">파일별 진행률</span>
 	        <progress id="progressBar_down" value="0" max="100" style="width:50%"></progress>
 	        <p id="message_down"></p>

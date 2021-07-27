@@ -123,7 +123,7 @@ public class DownloadController {
 			File tempTxtFile = new File(tempTxtPath);			
 
 
-			/* 파일 다운로드 진행률 출력 시작 */
+			/* 파일 다운로드 진행률 읽기 시작 */
 			// 1. RandomAcessFile
 			String doneByte; // 마지막 라인을 담을 String
 			RandomAccessFile raf = new RandomAccessFile(tempTxtFile, "r");
@@ -152,10 +152,15 @@ public class DownloadController {
 			System.out.println("---------------------------------------------------");
 			
 			raf.close();
-			/* 파일 다운로드 진행률 출력 끝 */
+			/* 파일 다운로드 진행률 읽기 끝 */
 			
 			// 파일 다운로드 진행률 값 클라이언트로 응답
 			response.getWriter().append(doneByte);
+			
+			if(doneByte.equals("100") && tempTxtFile.exists()) {
+				tempTxtFile.delete();
+				System.out.println("----------------다운로드 완료----------------");
+			}
 			
 			return "download";
 		}

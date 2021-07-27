@@ -2,6 +2,7 @@
 // 태그 가져오기
 const fileInput = document.getElementById("fileInput");
 const uploadZone = document.getElementById("uploadZone");
+const uploadFiles = document.getElementsByName("uploadFiles");
 const infoZone = document.getElementById("current_file_info");
 const progressBarZone = document.getElementById("progressBarZone");
 const allFilesProgressBar = document.getElementById("allFilesProgressBar");
@@ -14,8 +15,9 @@ const uploadedZone = document.getElementById("uploadedZone");
 
 
 // fileList를 담을 배열 객체 생성(전역변수)
-let newFileList = [];
-const newFileListIndex = 0;
+let newFileList = [];  // 임시 리스트(화면에 그리기 용)
+let forUploadFileList = [];  // 실제 업로드될 리스트(실제 선택된 파일들을 담을)
+const forUploadFileListIndex = 0;
 
 // ajax 통신을 하기 위한 XmlHttpRequest 객체 생성
 const xhttp = new XMLHttpRequest();
@@ -34,7 +36,7 @@ function showFiles(files) {
     
     for(let i = 0; i < files.length; i++) {
         fileListLi += "<li>";
-        fileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' value='false' checked>";
+        fileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' value='false' name='uploadFiles' checked>";
         fileListLi += "<span>" + files[i].name + "</span>";
         fileListLi += "<span> " + files[i].size + " Byte</span>";
         fileListLi += "</li>";
@@ -67,22 +69,22 @@ function setUploadFiles(e){
     showFiles(newFileList);
 }
 
-//드래그한 파일이 최초로 uploadZone에 진입했을 때
+// 드래그한 파일이 최초로 uploadZone에 진입했을 때
 uploadZone.addEventListener("dragenter", function(e) {
     e.stopPropagation();
     e.preventDefault();
 })
-//드래그한 파일이 uploadZone을 벗어났을 때
+// 드래그한 파일이 uploadZone을 벗어났을 때
 uploadZone.addEventListener("dragleave", function(e) {
     e.stopPropagation();
     e.preventDefault();
 })
-//드래그한 파일이 uploadZone에 머물러 있을 때
+// 드래그한 파일이 uploadZone에 머물러 있을 때
 uploadZone.addEventListener("dragover", function(e) {
     e.stopPropagation();
     e.preventDefault();
 })
-//드래그한 파일이 uploadZone에 드랍되었을 때
+// 드래그한 파일이 uploadZone에 드랍되었을 때
 uploadZone.addEventListener("drop", function(e) {
     e.preventDefault();
     
@@ -102,6 +104,30 @@ uploadZone.addEventListener("drop", function(e) {
         alert("ERROR");
     }
 })
+
+// 선택된 업로드 파일 담기
+function setUploadFileList(){
+    // 선택 파일만 담기
+    let uploadTargetIndex = -1;
+
+    for(let i = 0; i < uploadFiles.length; i++){
+        if(uploadFiles[i].checked){  // 체크된 파일만 필터링
+            uploadTargetIndex = Number(uploadFiles[i].id.split("_")[2]);
+            // 체크된 파일 index와 downloadFilelist의 파일 index가 일치하면 다운로드용 리스트에 새로 담기
+            for(let k = 0; k < newFileList.length; k++){
+                if(uploadTargetIndex == k){
+                    forUploadFileList.push(newFileList[k]);
+                }
+            }
+        }
+    }
+    if(forUploadFileList.length == 0){
+        alert("선택된 파일이 없습니다.")
+        return;
+    }else{
+        startUpload(forUploadFileListIndex);
+    }
+}
 
 // 업로드된 파일 리스트 그리기
 function drawUploadedFileList(uploadedFileList){
@@ -132,10 +158,10 @@ function createGuid() {
 }
 
 // ajax통신
-function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileList, newFileListIndex){
+function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadFileList, forUploadFileListIndex){
 
     console.log("indicator22222: " + indicator);
-    console.log(newFileList[newFileListIndex].name + " file" + "[" + Number(slicedFileIndex+1) + "]" + "업로드 시작");
+    console.log(forUploadFileList[forUploadFileListIndex].name + " file" + "[" + Number(slicedFileIndex+1) + "]" + "업로드 시작");
     
     /* progressBar 시작 */
     xhttp.upload.onloadstart = function (e) {
@@ -143,12 +169,12 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
         progressBar.max = e.total;
         allProgressBar.value = 0;
         allProgressBar.max = e.total;
-        allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file uploading...";
+        allMessage.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "\"" + " file uploading...";
     };
     // 단일 전송인 경우
     if(slicedFiles.length == 0){
         xhttp.upload.onprogress = function (e) {
-            allFilesProgressBar.value = (newFileListIndex+1)/(newFileList.length)*100;
+            allFilesProgressBar.value = (forUploadFileListIndex+1)/(forUploadFileList.length)*100;
             allFilesProgressBar.max = 100;
             allProgressBar.value = e.loaded;
             allProgressBar.max = e.total;
@@ -156,9 +182,9 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
             progressBar.max = e.total;
         };
         xhttp.upload.onloadend = function (e) {
-            allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file upload complete!!";
-            message.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file upload complete!!";
-            if(newFileListIndex+1 == newFileList.length){
+            allMessage.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "\"" + " file upload complete!!";
+            message.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "\"" + " file upload complete!!";
+            if(forUploadFileListIndex+1 == forUploadFileList.length){
                 allFilesMessage.textContent = "ALL Files Upload Complete!!!";
                 allMessage.textContent = "";
                 message.textContent = "";
@@ -167,7 +193,7 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
     // 분할 전송인 경우
     }else{
         xhttp.upload.onprogress = function (e) {
-            allFilesProgressBar.value = (newFileListIndex+1)/(newFileList.length)*100;
+            allFilesProgressBar.value = (forUploadFileListIndex+1)/(forUploadFileList.length)*100;
             allFilesProgressBar.max = 100;
             allProgressBar.value = (slicedFileIndex+1)/(slicedFiles.length)*100;
             allProgressBar.max = 100;
@@ -175,13 +201,13 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
             progressBar.max = e.total;
         };
         xhttp.upload.onloadend = function (e) {
-            allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file uploading...";
+            allMessage.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "\"" + " file uploading...";
             if(slicedFileIndex+1 == slicedFiles.length){
-                allMessage.textContent = "\"" + newFileList[newFileListIndex].name + "\"" + " file upload complete!!";
+                allMessage.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "\"" + " file upload complete!!";
             }
-            message.textContent = "\"" + newFileList[newFileListIndex].name + "[" + Number(slicedFileIndex+1) + "]" + "\"" + " file upload complete!!";
-            if(newFileListIndex+1 == newFileList.length){
-                allFilesMessage.textContent = "ALL file upload complete!!";
+            message.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "[" + Number(slicedFileIndex+1) + "]" + "\"" + " file upload complete!!";
+            if(forUploadFileListIndex+1 == forUploadFileList.length){
+                allFilesMessage.textContent = "ALL Files Upload complete!!";
                 allMessage.textContent = "";
                 message.textContent = "";
             }
@@ -190,11 +216,11 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
     /* progressBar 끝 */
 
     /* 파일 전송을 위한 ajax통신 시작 */
-    //file 전송 정보를 담을 formData 객체 생성
+    // file 전송 정보를 담을 formData 객체 생성
     const newFormData = new FormData();
     // 각 file을 formData 객체에 담기
     if(slicedFiles.length == 0){ // 단일 전송인 경우
-        newFormData.append("files", newFileList[newFileListIndex]);
+        newFormData.append("files", forUploadFileList[forUploadFileListIndex]);
     }else{  // 분할 전송인 경우
         newFormData.append("slicedFiles", slicedFiles[slicedFileIndex]);
     }
@@ -230,17 +256,17 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
                 if(slicedFileIndex < slicedFiles.length-1){ // 만약, index가 slicedFiles.length 보다 작으면
                     slicedFileIndex++; // index 1 증가
                     // 재귀함수: 함수 내에서 자신을 다시 호출
-                    startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileList, newFileListIndex);
+                    startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadFileList, forUploadFileListIndex);
                 }
-                else if(newFileListIndex < newFileList.length-1){
-                    newFileListIndex++;
-                    console.log(newFileList[newFileListIndex].name + " file 업로드 시작");  
-                    startUpload(newFileListIndex);
+                else if(forUploadFileListIndex < forUploadFileList.length-1){
+                    forUploadFileListIndex++;
+                    console.log(forUploadFileList[forUploadFileListIndex].name + " file 업로드 시작");  
+                    startUpload(forUploadFileListIndex);
                 }else{
-                    console.log(newFileList[newFileListIndex].name + " file" + "업로드 - 종료")
-                    drawUploadedFileList(newFileList);
+                    console.log(forUploadFileList[forUploadFileListIndex].name + " file" + "업로드 - 종료")
+                    drawUploadedFileList(forUploadFileList);
                 }              
-                //console.log(xhttp.responseText)
+                // console.log(xhttp.responseText)
             }else if(req.status === 200 && indicator == false && slicedFileIndex < slicedFiles.length-1){
                 console.log("indicator444444: " + indicator);
                 console.log("---업로드 중단---");
@@ -249,12 +275,12 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
                 // 여러 파일이 중단될 경우를 고려해서
                 // loacalStorage에 담을때 구분자, 배열 등을 활용해 잘 저장해 놓는 것이 중요
                 // 나중에 이어올리기시 localStorage에 있는 해당 키들을 for문으로 돌리면서 일치하는 값 찾을 수 있도록 하기 위함..
-                localStorage.setItem("resume_upload_" + guid, guid + "__" + slicedFileIndex + "__" + newFileList[newFileListIndex].name + "__" + newFileList[newFileListIndex].size);
-                console.log("resume_upload_" + guid + " : " + guid + "__" + slicedFileIndex + "__" + newFileList[newFileListIndex].name + "__" + newFileList[newFileListIndex].size);
+                localStorage.setItem("resume_upload_" + guid, guid + "__" + slicedFileIndex + "__" + forUploadFileList[forUploadFileListIndex].name + "__" + forUploadFileList[forUploadFileListIndex].size);
+                console.log("resume_upload_" + guid + " : " + guid + "__" + slicedFileIndex + "__" + forUploadFileList[forUploadFileListIndex].name + "__" + forUploadFileList[forUploadFileListIndex].size);
                 console.log("----LocalStorage에 현재 파일 정보 저장 완료----");
-                //console.log(xhttp.responseText)
+                // console.log(xhttp.responseText)
             }else if(req.status === 200 && indicator == false && slicedFileIndex == slicedFiles.length-1){
-                alert("이미 \"" + newFileList[newFileListIndex].name + "\" file의 업로드가 완료되었습니다.");  
+                alert("이미 \"" + forUploadFileList[forUploadFileListIndex].name + "\" file의 업로드가 완료되었습니다.");  
             }else{
                 console.error("------통신 실패------");
                 console.error("req.status: " + req.status);
@@ -265,16 +291,16 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileLis
     /* 파일 전송을 위한 ajax통신 끝 */
 }
 
-//파일 업로드
-function startUpload(newFileListIndex){
+// 파일 업로드
+function startUpload(forUploadFileListIndex){
 
     indicator = true;
     console.log("indicator1111: " + indicator);
-    console.log("startUpload--------------- newFileListIndex: " + newFileListIndex + " ---------------");  
+    console.log("startUpload--------------- forUploadFileListIndex: " + forUploadFileListIndex + " ---------------");  
 
     // 단일 파일 제한 용량 설정
     // 참고: Tomcat은 기본적으로 Post로 전송할 데이터의 크기를 최대2MB까지 Default로 잡고있다.(https://youngram2.tistory.com/110)
-    const limitSize = 2 * 1024 * 1024;  // Byte // 약 2MB
+    const limitSize = 1 * 1024 * 1024;  // Byte // 약 2MB
     console.log("limitSize: " + limitSize);
     
     // 분할한 파일을 담을 배열 객체
@@ -284,16 +310,16 @@ function startUpload(newFileListIndex){
 
     /* 분할 시작 */
     // 만약, 파일용량이 제한용량보다 크면
-    if(newFileList[newFileListIndex].size >= limitSize){ 
+    if(forUploadFileList[forUploadFileListIndex].size >= limitSize){ 
         // 용량에 따른 분할 수 계산
-        const slicedFilesNum = Math.ceil(newFileList[newFileListIndex].size / limitSize); 
+        const slicedFilesNum = Math.ceil(forUploadFileList[forUploadFileListIndex].size / limitSize); 
         console.log("slicedFilesNum: " + slicedFilesNum);
         // 파일 분할
         for(let f = 0; f < slicedFilesNum; f++){
             // 각 분할 횟수별 분할 시작 포인트 설정
             const startPoint = limitSize * f;
             // slice(시작점, 자를점, Type)로 파일 분할
-            const slicedFile = newFileList[newFileListIndex].slice(startPoint, startPoint + limitSize, newFileList[newFileListIndex].type);
+            const slicedFile = newFileList[forUploadFileListIndex].slice(startPoint, startPoint + limitSize, forUploadFileList[forUploadFileListIndex].type);
             // 분할된 파일 slicedFiles 배열 객체에 담기
             slicedFiles.push(slicedFile);
         }
@@ -305,11 +331,11 @@ function startUpload(newFileListIndex){
 
     // 기본 파라미터 정보 담기
     let params = "&limitSize=" + limitSize;
-        params += "&originName=" + newFileList[newFileListIndex].name;
-        params += "&originSize=" + newFileList[newFileListIndex].size;
-        params += "&originType=" + newFileList[newFileListIndex].type;
+        params += "&originName=" + forUploadFileList[forUploadFileListIndex].name;
+        params += "&originSize=" + forUploadFileList[forUploadFileListIndex].size;
+        params += "&originType=" + forUploadFileList[forUploadFileListIndex].type;
 
-    /* 단일 파일일 경우 단일 전송 시작*/
+    /* 단일 파일일 경우 단일 전송 시작 */
     if(slicedFiles.length == 0){
         console.log("------단일 파일 전송 시작------");
 
@@ -319,7 +345,7 @@ function startUpload(newFileListIndex){
         params += "&slicedFilesLength=" + 0;
         
         // ajax통신 시작
-        startAjax(xhttp, slicedFiles, slicedFileIndex, "0", params, newFileList, newFileListIndex);
+        startAjax(xhttp, slicedFiles, slicedFileIndex, "0", params, forUploadFileList, forUploadFileListIndex);
 
     /* 단일 파일 전송 끝 */
     }
@@ -332,7 +358,7 @@ function startUpload(newFileListIndex){
     
         /* 로컬스토리지에 저장된 기존 업로드 중단된 파일 정보들 확인 시작 */
         // Key: "resume_upload_" + guid
-        // Vlaue: guid + "__" + slicedFileIndex + "__" + newFileList[newFileListIndex].name + "__" + newFileList[newFileListIndex].size
+        // Vlaue: guid + "__" + slicedFileIndex + "__" + newFileList[forUploadFileListIndex].name + "__" + newFileList[forUploadFileListIndex].size
         // 구분자: __
         let canceledFileName;
         let canceledFileSize;
@@ -345,7 +371,7 @@ function startUpload(newFileListIndex){
                 canceledFileSize = localStorage.getItem(localStorage.key(l)).split("__")[3];
 
                 // 파일명과 파일크기로 파일 정보 대조
-                if(newFileList[newFileListIndex].name == canceledFileName && newFileList[newFileListIndex].size == canceledFileSize){
+                if(forUploadFileList[forUploadFileListIndex].name == canceledFileName && forUploadFileList[forUploadFileListIndex].size == canceledFileSize){
                     // 이어올리기 선택
                     if(confirm("기존에 업로드된 데이터가 있습니다. 이어서 업로드하시겠습니까?")){
                         // 저장되있던 정보로 현재 파일의 정보 업데이트
@@ -367,7 +393,7 @@ function startUpload(newFileListIndex){
         params += "&slicedFilesLength=" + slicedFiles.length;
 
         // ajax통신 시작
-        startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, newFileList, newFileListIndex);
+        startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadFileList, forUploadFileListIndex);
     
     /* 분할 파일 전송 끝 */
     }
@@ -456,46 +482,42 @@ function fileLoad(){
 let progressPercentage = 0;
 
 // 다운로드 프로그래스바 그리기
-function drawDownloadProgressBar(progressPercentage){
+function drawDownloadProgressBar(progressPercentage, forDownloadFilelist, forDownloadFilelistIndex){
     
-    // allFilesProgressBar_down.value = 0;
-    // allFilesProgressBar_down.max = 100;
     progressBar_down.value = progressPercentage;
     progressBar_down.max = 100;
+    message_down.textContent = "\"" + forDownloadFilelist[forDownloadFilelistIndex].name + "\"" + " file downloading...";
+    allFilesProgressBar_down.value = (forDownloadFilelistIndex+1)/(forDownloadFilelist.length)*100;
+    allFilesProgressBar_down.max = 100;
+
+    if(forDownloadFilelistIndex+1 == forDownloadFilelist.length){
+        allFilesMessage_down.textContent = "ALL Files Download complete!!";
+        message_down.textContent = "";
+    }
 }
 
 // 현재 다운로드 진행률 모니터링
-function checkDownProgress(downFileGuid){
+function checkDownProgress(downFileGuid, forDownloadFilelist, forDownloadFilelistIndex){
     
     const xhttp2 = xhttp;
 
     /* ajax통신 시작 */
-
     // http 요청 타입 / 주소 / 동기식 여부 설정
     xhttp2.open("POST", "http://localhost:8086/upload/usr/download/progress?guid=" + downFileGuid, true); // 메서드와 주소 설정    
     // http 요청
     xhttp2.send();   // 요청 전송
 
-    // XmlHttpRequest의 요청
-    // 통신 상태 모니터링
+    // XmlHttpRequest의 요청 // 통신 상태 모니터링
     xhttp2.onreadystatechange = function(e){   // 요청에 대한 콜백
-        // XMLHttpRequest를 이벤트 파라미터에서 취득
         const req2 = e.target;
         console.log(req2);   // 콘솔 출력
 
-        // 통신 상태가 완료가 되면...
-        if(req2.readyState === 4) {    // 요청이 완료되면
-            // Http response 응답코드가 200(정상)
-            // states = 0 unintialized 요청이 초기화 안 된 상태, open() not called yet.
-            // 1=loaded 서버 연결 설정된(열린) 상태, open() has been called.
-            // 2=loading 요청 접수된 상태, send() has been called
-            // 3=interactive 요청 처리 중 상태
-            // 4=complete 요청 완료되고 응답 준비된 상태
+        if(req2.readyState === 4) {
             if(req2.status === 200) {
                 console.log("------통신 성공------");
                 console.log("doneByte : " + xhttp2.responseText);
                 progressPercentage = Number(xhttp2.responseText);
-                drawDownloadProgressBar(progressPercentage);
+                drawDownloadProgressBar(progressPercentage, forDownloadFilelist, forDownloadFilelistIndex);
             }else{
                 console.error("------통신 실패------");
                 console.error("req2.status: " + req2.status);
@@ -505,15 +527,12 @@ function checkDownProgress(downFileGuid){
     }
     /* ajax통신 끝 */
     
-
 }
 
 // iframe으로 다운로드 요청 보내기
 function startIframRequest(forDownloadFilelist, forDownloadFilelistIndex){
     // 선택된 파일들에 대한 정보 URL로 담기
-    // startDownloadAjax();
-    // 2. iframe에 URL 세팅
-    // url
+    // iframe에 URL 세팅
     let forDownloadUrl = "http://localhost:8086/upload/usr/download/server?";
     let downFileGuid = createGuid();
 
@@ -531,14 +550,14 @@ function startIframRequest(forDownloadFilelist, forDownloadFilelistIndex){
     // clearInterval 함수를 사용하여 중지
     // 지정된 작업은 모두 실행되고 다음 작업 스케쥴이 중지
     const startInterval = setInterval(function(){
-        if(progressPercentage < 100){
-            checkDownProgress(downFileGuid);
-        }else if(progressPercentage == 100){
+        if(progressPercentage < 100){  // 다운로드 진행률 값이 100보다 작으면..
+            checkDownProgress(downFileGuid, forDownloadFilelist, forDownloadFilelistIndex);
+        }else if(progressPercentage == 100){  // 다운로드 진행률 값이 100이면...종료
             clearInterval(startInterval);
-            if(forDownloadFilelistIndex < forDownloadFilelist.length-1){
+            if(forDownloadFilelistIndex < forDownloadFilelist.length-1){ // 아직 다운로드해야 할 파일이 남았는지 체크
                 progressPercentage = 0;
                 forDownloadFilelistIndex++;
-                startIframRequest(forDownloadFilelist, forDownloadFilelistIndex);
+                startIframRequest(forDownloadFilelist, forDownloadFilelistIndex); // 다음 파일 다운로드 시작
             }
         }
     }, 100);  // ex) 1초 = 1000
@@ -548,21 +567,26 @@ function startIframRequest(forDownloadFilelist, forDownloadFilelistIndex){
 // 다운로드 시작
 function startDownload(forDownloadFilelistIndex){
 
-    let targetIndex = -1;
+    let downloadTargetIndex = -1;
     let forDownloadFilelist = [];
 
     for(let i = 0; i < downFiles.length; i++){
         if(downFiles[i].checked){  // 체크된 파일만 필터링
-            targetIndex = Number(downFiles[i].id.split("_")[2]);
+            downloadTargetIndex = Number(downFiles[i].id.split("_")[2]);
             // 체크된 파일 index와 downloadFilelist의 파일 index가 일치하면 다운로드용 리스트에 새로 담기
             for(let k = 0; k < downloadFilelist.length; k++){
-                if(targetIndex == k){
+                if(downloadTargetIndex == k){
                     forDownloadFilelist.push(downloadFilelist[k]);
                 }
             }
         }
     }
-    startIframRequest(forDownloadFilelist, forDownloadFilelistIndex);
+    if(forDownloadFilelist.length == 0){
+        alert("선택된 파일이 없습니다.")
+        return;
+    }else{
+        startIframRequest(forDownloadFilelist, forDownloadFilelistIndex);
+    }
 }
 
 
