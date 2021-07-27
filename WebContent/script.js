@@ -535,15 +535,14 @@ function startIframRequest(forDownloadFilelist, forDownloadFilelistIndex){
             checkDownProgress(downFileGuid);
         }else if(progressPercentage == 100){
             clearInterval(startInterval);
+            if(forDownloadFilelistIndex < forDownloadFilelist.length-1){
+                progressPercentage = 0;
+                forDownloadFilelistIndex++;
+                startIframRequest(forDownloadFilelist, forDownloadFilelistIndex);
+            }
         }
     }, 100);  // ex) 1초 = 1000
 
-    
-
-    // if(forDownloadFilelistIndex !== forDownloadFilelist.length-1){
-    //     forDownloadFilelistIndex++;
-    //     startIframRequest(forDownloadFilelistIndex, forDownloadFilelist);
-    // }
 }
 
 // 다운로드 시작
@@ -566,8 +565,7 @@ function startDownload(forDownloadFilelistIndex){
     }
     
     //alert("forDownloadFilelist.length : " + forDownloadFilelist.length)
-
-    startIframRequest(forDownloadFilelist, 2);
+    startIframRequest(forDownloadFilelist, forDownloadFilelistIndex);
 }
 
 

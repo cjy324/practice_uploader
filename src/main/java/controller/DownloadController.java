@@ -83,18 +83,11 @@ public class DownloadController {
 					int x = (int) doneSize;
 					int y = (int) originSize;
 					int percentage = (int) Math.round((double) x/y*100);
-//					System.out.println("x: " + x);
-//					System.out.println("y: " + y);
-//				    System.out.println("percentage: " + percentage);
-//					int x = (int) (doneSize/originSize);
+					if(percentage > 100) { // 100보다 크면 최종값을 100으로..
+						percentage = 100;
+					}
 					String state = percentage + "/" + 100 + "\r\n";
-					
-					
-//					if(doneSize == 1024) {
-//						state = "START/" + originSize + "\r\n";
-//					}else if(doneSize >= originSize) {
-//						state = "DONE/" + originSize + "\r\n";
-//					}
+
 					fos.write(state.getBytes());
 				}
 			}
@@ -161,7 +154,7 @@ public class DownloadController {
 			raf.close();
 			/* 파일 다운로드 진행률 출력 끝 */
 			
-			// 파일다운로드 진행률 응답
+			// 파일 다운로드 진행률 값 클라이언트로 응답
 			response.getWriter().append(doneByte);
 			
 			return "download";
