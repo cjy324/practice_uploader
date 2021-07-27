@@ -400,18 +400,18 @@ const allFilesMessage_down = document.getElementById("allFilesMessage_down");
 const message_down = document.getElementById("message_down");
 
 // 다운로드 파일 정보를 담아놓을 전역변수
-let forDownloadFilelist = [];
+let downloadFilelist = [];
 let forDownloadFilelistIndex = 0;
 
 // downloadZone에 그리기
-function drawDownloadFileList(forDownloadFilelist){
+function drawDownloadFileList(downloadFilelist){
     let forDownloadFileListLi = "";	// uploadedZone에 upload한 파일별 태그 생성
     
-    for(let i = 0; i < forDownloadFilelist.length; i++) {
+    for(let i = 0; i < downloadFilelist.length; i++) {
         forDownloadFileListLi += "<li>";
         forDownloadFileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' name='downFiles' value='false' checked>";
-        forDownloadFileListLi += "<span>" + forDownloadFilelist[i].originFileName + "</span>";
-        forDownloadFileListLi += "<span> " + forDownloadFilelist[i].originFileSize + " Byte</span>";
+        forDownloadFileListLi += "<span>" + downloadFilelist[i].originFileName + "</span>";
+        forDownloadFileListLi += "<span> " + downloadFilelist[i].originFileSize + " Byte</span>";
         forDownloadFileListLi += "</li>";
     }
 
@@ -444,12 +444,12 @@ function fileLoad(){
     };
 
     // 전역변수 배열에 담기
-    forDownloadFilelist.push(file1);
-    forDownloadFilelist.push(file2);
-    forDownloadFilelist.push(file3);
+    downloadFilelist.push(file1);
+    downloadFilelist.push(file2);
+    downloadFilelist.push(file3);
 
     // forDownloadFilelist에 담긴 파일 정보로 태그 그리기
-    drawDownloadFileList(forDownloadFilelist);
+    drawDownloadFileList(downloadFilelist);
 }
 
 // 다운로드 진행률
@@ -548,23 +548,20 @@ function startIframRequest(forDownloadFilelist, forDownloadFilelistIndex){
 // 다운로드 시작
 function startDownload(forDownloadFilelistIndex){
 
-    // 21.07.26 
-    // 선택하지 않은 파일은 대상리스트에서 제외 로직 구현 필요
     let targetIndex = -1;
+    let forDownloadFilelist = [];
+
     for(let i = 0; i < downFiles.length; i++){
-        if(!downFiles[i].checked){
-            alert(downFiles[i].id.split("_")[2] + " not checked!!!!!!");
+        if(downFiles[i].checked){  // 체크된 파일만 필터링
             targetIndex = Number(downFiles[i].id.split("_")[2]);
-            for(let k = 0; k < forDownloadFilelist.length; k++){
+            // 체크된 파일 index와 downloadFilelist의 파일 index가 일치하면 다운로드용 리스트에 새로 담기
+            for(let k = 0; k < downloadFilelist.length; k++){
                 if(targetIndex == k){
-                    forDownloadFilelist.splice(targetIndex, 1);
-                    alert("file_" + targetIndex + "삭제 완료")
+                    forDownloadFilelist.push(downloadFilelist[k]);
                 }
             }
         }
     }
-    
-    //alert("forDownloadFilelist.length : " + forDownloadFilelist.length)
     startIframRequest(forDownloadFilelist, forDownloadFilelistIndex);
 }
 
