@@ -64,7 +64,7 @@ function showFiles(files) {
 function setUploadFiles(e){
     // Input으로부터 파일 배열 가져오기
     newFileList = e.target.files;
-    console.log(newFileList);
+    // console.log(newFileList);
     // input에 파일이 들어오면 dropZone에 업로드 될 파일리스트 그리기
     showFiles(newFileList);
 }
@@ -160,7 +160,7 @@ function createGuid() {
 // ajax통신
 function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadFileList, forUploadFileListIndex){
 
-    console.log("indicator22222: " + indicator);
+    // console.log("indicator22222: " + indicator);
     console.log(forUploadFileList[forUploadFileListIndex].name + " file" + "[" + Number(slicedFileIndex+1) + "]" + "업로드 시작");
     
     /* progressBar 시작 */
@@ -184,7 +184,7 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadF
         xhttp.upload.onloadend = function (e) {
             allMessage.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "\"" + " file upload complete!!";
             message.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "\"" + " file upload complete!!";
-            if(forUploadFileListIndex+1 == forUploadFileList.length){
+            if(e.loaded == e.total && forUploadFileListIndex+1 == forUploadFileList.length){
                 allFilesMessage.textContent = "ALL Files Upload Complete!!!";
                 allMessage.textContent = "";
                 message.textContent = "";
@@ -206,7 +206,7 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadF
                 allMessage.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "\"" + " file upload complete!!";
             }
             message.textContent = "\"" + forUploadFileList[forUploadFileListIndex].name + "[" + Number(slicedFileIndex+1) + "]" + "\"" + " file upload complete!!";
-            if(forUploadFileListIndex+1 == forUploadFileList.length){
+            if(e.loaded == e.total && forUploadFileListIndex+1 == forUploadFileList.length){
                 allFilesMessage.textContent = "ALL Files Upload complete!!";
                 allMessage.textContent = "";
                 message.textContent = "";
@@ -240,7 +240,7 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadF
     xhttp.onreadystatechange = function(e){   // 요청에 대한 콜백
         // XMLHttpRequest를 이벤트 파라미터에서 취득
         const req = e.target;
-        console.log(req);   // 콘솔 출력
+        // console.log(req);   // 콘솔 출력
 
         // 통신 상태가 완료가 되면...
         if(req.readyState === 4) {    // 요청이 완료되면
@@ -268,7 +268,7 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadF
                 }              
                 // console.log(xhttp.responseText)
             }else if(req.status === 200 && indicator == false && slicedFileIndex < slicedFiles.length-1){
-                console.log("indicator444444: " + indicator);
+                // console.log("indicator444444: " + indicator);
                 console.log("---업로드 중단---");
                 console.log("----LocalStorage에 현재 파일 정보 저장 시작----");
                 // 업로드시 여러 파일이 중단될 수도 있으니 
@@ -295,13 +295,13 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadF
 function startUpload(forUploadFileListIndex){
 
     indicator = true;
-    console.log("indicator1111: " + indicator);
+    // console.log("indicator1111: " + indicator);
     console.log("startUpload--------------- forUploadFileListIndex: " + forUploadFileListIndex + " ---------------");  
 
     // 단일 파일 제한 용량 설정
     // 참고: Tomcat은 기본적으로 Post로 전송할 데이터의 크기를 최대2MB까지 Default로 잡고있다.(https://youngram2.tistory.com/110)
     const limitSize = 1 * 1024 * 1024;  // Byte // 약 2MB
-    console.log("limitSize: " + limitSize);
+    // console.log("limitSize: " + limitSize);
     
     // 분할한 파일을 담을 배열 객체
     const slicedFiles = [];
@@ -363,10 +363,10 @@ function startUpload(forUploadFileListIndex){
         let canceledFileName;
         let canceledFileSize;
         if(localStorage.length > 0){
-            console.log("localStorage.length : " + localStorage.length);
+            // console.log("localStorage.length : " + localStorage.length);
             for(let l = 0; l < localStorage.length; l++){
                 // 로컬스토리지로부터 정보 가져와 구분자를 기준으로 문자열 자르기
-                console.log("localStorage.getItem(localStorage.key(l)) : " + localStorage.getItem(localStorage.key(l)));
+                // console.log("localStorage.getItem(localStorage.key(l)) : " + localStorage.getItem(localStorage.key(l)));
                 canceledFileName = localStorage.getItem(localStorage.key(l)).split("__")[2];
                 canceledFileSize = localStorage.getItem(localStorage.key(l)).split("__")[3];
 
@@ -406,7 +406,7 @@ function cancelUpload(){
     // 따라서,
     // 통신 indicator를 false로 변경해서 다음 로직을 타지 않게끔해서 비교적 안전하게 업로드를 중단해준다.
     indicator = false;
-    console.log("-------------upload cancel-------------");
+    console.log("-------------upload canceled-------------");
 }
 
 
@@ -490,7 +490,7 @@ function drawDownloadProgressBar(progressPercentage, forDownloadFilelist, forDow
     allFilesProgressBar_down.value = (forDownloadFilelistIndex+1)/(forDownloadFilelist.length)*100;
     allFilesProgressBar_down.max = 100;
 
-    if(forDownloadFilelistIndex+1 == forDownloadFilelist.length){
+    if(progressPercentage == 100 && forDownloadFilelistIndex+1 == forDownloadFilelist.length){
         allFilesMessage_down.textContent = "ALL Files Download complete!!";
         message_down.textContent = "";
     }
@@ -510,7 +510,7 @@ function checkDownProgress(downFileGuid, forDownloadFilelist, forDownloadFilelis
     // XmlHttpRequest의 요청 // 통신 상태 모니터링
     xhttp2.onreadystatechange = function(e){   // 요청에 대한 콜백
         const req2 = e.target;
-        console.log(req2);   // 콘솔 출력
+        // console.log(req2);   // 콘솔 출력
 
         if(req2.readyState === 4) {
             if(req2.status === 200) {
@@ -588,6 +588,3 @@ function startDownload(forDownloadFilelistIndex){
         startIframRequest(forDownloadFilelist, forDownloadFilelistIndex);
     }
 }
-
-
-
