@@ -3,11 +3,11 @@
 <%@ page import="java.io.*" %>
 <%@ page import="java.net.URLEncoder" %>
 <%
-int index = (int) request.getAttribute("index");
+/* int index = (int) request.getAttribute("index");
 String guid = (String) request.getAttribute("guid");
 String originName = (String) request.getAttribute("originName");
 long originSize = (long) request.getAttribute("originSize");
-String originPath = (String) request.getAttribute("originPath");
+String originPath = (String) request.getAttribute("originPath"); */
 %>
 <!DOCTYPE html>
 <html>

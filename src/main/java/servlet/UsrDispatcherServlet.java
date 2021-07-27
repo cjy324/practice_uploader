@@ -40,7 +40,7 @@ public class UsrDispatcherServlet extends DispatcherServlet {
 			}
 		}
 
-		System.out.println("jspPath: " + jspPath);
+		//System.out.println("jspPath: " + jspPath);
 		
 		return jspPath;
 

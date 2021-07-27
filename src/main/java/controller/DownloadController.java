@@ -2,18 +2,15 @@ package controller;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 
 public class DownloadController {
@@ -73,8 +70,7 @@ public class DownloadController {
 			byte[] bytes = new byte[1024]; //(int) originSize
 			
 			// BufferedInputStream 과 BufferedOutputStream은 바이트 기반의 성능 향상 보조 스트림이고,
-			// BufferedReader 와 BufferedWriter는 문자 기반 성능 향상 스트림입니다.
-			
+			// BufferedReader 와 BufferedWriter는 문자 기반 성능 향상 스트림	
 			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
 			BufferedOutputStream bos = new BufferedOutputStream(response.getOutputStream());
 			// 파일 읽어서 브라우저로 출력
@@ -84,12 +80,21 @@ public class DownloadController {
 				// 임시 txt파일에 현재 다운로드된 byte 크기 쓰기
 				if(tempTxtFile.exists()) {
 					long doneSize = count*1024;
-					String state = doneSize + "/" + originSize + "\r\n";
-					if(doneSize == 1024) {
-						state = "START/" + originSize + "\r\n";
-					}else if(doneSize >= originSize) {
-						state = "DONE/" + originSize + "\r\n";
-					}
+					int x = (int) doneSize;
+					int y = (int) originSize;
+					int percentage = (int) Math.round((double) x/y*100);
+//					System.out.println("x: " + x);
+//					System.out.println("y: " + y);
+//				    System.out.println("percentage: " + percentage);
+//					int x = (int) (doneSize/originSize);
+					String state = percentage + "/" + 100 + "\r\n";
+					
+					
+//					if(doneSize == 1024) {
+//						state = "START/" + originSize + "\r\n";
+//					}else if(doneSize >= originSize) {
+//						state = "DONE/" + originSize + "\r\n";
+//					}
 					fos.write(state.getBytes());
 				}
 			}
@@ -125,10 +130,9 @@ public class DownloadController {
 			File tempTxtFile = new File(tempTxtPath);			
 
 
-			/* 파일 다운로드 프로그래스바 출력 시작 */
-			String doneByte;
-			
-			// 1. RandomAcessFile, 마지막 라인을 담을 String
+			/* 파일 다운로드 진행률 출력 시작 */
+			// 1. RandomAcessFile
+			String doneByte; // 마지막 라인을 담을 String
 			RandomAccessFile raf = new RandomAccessFile(tempTxtFile, "r");
 			StringBuffer lastLineText = new StringBuffer();
 			
@@ -152,10 +156,13 @@ public class DownloadController {
 			String[] doneBytes = lastLineText.toString().split("/");
 			doneByte = doneBytes[0];
 			System.out.println("doneByte : " + doneByte);
+			System.out.println("---------------------------------------------------");
 			
 			raf.close();
-			/* 파일 다운로드 프로그래스바 출력 끝 */
+			/* 파일 다운로드 진행률 출력 끝 */
 			
+			// 파일다운로드 진행률 응답
+			response.getWriter().append(doneByte);
 			
 			return "download";
 		}

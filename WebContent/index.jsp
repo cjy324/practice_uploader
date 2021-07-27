@@ -7,6 +7,9 @@
 <link rel="stylesheet" href="style.css">
 <script defer src="script.js"></script>
 <title>UPLOADER & DOWNLOADER</title>
+<script type="text/javascript">
+	let testVal = 10000;
+</script>
 </head>
 <body>
 	<section class="main_section">
@@ -124,6 +127,14 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        <div id="progressBarZone_down">
+        	<span style="font-size: 14px;">총 진행률</span>
+        	<progress id='allFilesProgressBar_down' value='0' max='100' style='width:50%'></progress>
+        	<p id="allFilesMessage_down" style="font-weight: bold;"></p>
+        	<span style="font-size: 14px;">파일별 진행률</span>
+	        <progress id="progressBar_down" value="0" max="100" style="width:50%"></progress>
+	        <p id="message_down"></p>
         </div>
         <iframe id="download_frame" name="download_frame" style="display: none;" src=""></iframe>
     </section>

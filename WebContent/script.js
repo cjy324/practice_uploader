@@ -393,6 +393,11 @@ function cancelUpload(){
 const downlaodFrame = document.getElementById("download_frame");
 const downloadZone = document.getElementById("downloadZone");
 const downFiles = document.getElementsByName("downFiles");
+const progressBarZone_down = document.getElementById("progressBarZone_down");
+const allFilesProgressBar_down = document.getElementById("allFilesProgressBar_down");
+const progressBar_down = document.getElementById("progressBar_down");
+const allFilesMessage_down = document.getElementById("allFilesMessage_down");
+const message_down = document.getElementById("message_down");
 
 // 다운로드 파일 정보를 담아놓을 전역변수
 let forDownloadFilelist = [];
@@ -447,6 +452,18 @@ function fileLoad(){
     drawDownloadFileList(forDownloadFilelist);
 }
 
+// 다운로드 진행률
+let progressPercentage = 0;
+
+// 다운로드 프로그래스바 그리기
+function drawDownloadProgressBar(progressPercentage){
+    
+    // allFilesProgressBar_down.value = 0;
+    // allFilesProgressBar_down.max = 100;
+    progressBar_down.value = progressPercentage;
+    progressBar_down.max = 100;
+}
+
 // 현재 다운로드 진행률 모니터링
 function checkDownProgress(downFileGuid){
     
@@ -476,7 +493,9 @@ function checkDownProgress(downFileGuid){
             // 4=complete 요청 완료되고 응답 준비된 상태
             if(req2.status === 200) {
                 console.log("------통신 성공------");
-                console.log(xhttp2.responseText);
+                console.log("doneByte : " + xhttp2.responseText);
+                progressPercentage = Number(xhttp2.responseText);
+                drawDownloadProgressBar(progressPercentage);
             }else{
                 console.error("------통신 실패------");
                 console.error("req2.status: " + req2.status);
@@ -490,7 +509,7 @@ function checkDownProgress(downFileGuid){
 }
 
 // iframe으로 다운로드 요청 보내기
-function startIframRequest(forDownloadFilelistIndex, forDownloadFilelist){
+function startIframRequest(forDownloadFilelist, forDownloadFilelistIndex){
     // 선택된 파일들에 대한 정보 URL로 담기
     // startDownloadAjax();
     // 2. iframe에 URL 세팅
@@ -505,17 +524,19 @@ function startIframRequest(forDownloadFilelistIndex, forDownloadFilelist){
     forDownloadUrl += "&originPath=" + forDownloadFilelist[forDownloadFilelistIndex].originFilePath;
     forDownloadUrl += "&originType=" + forDownloadFilelist[forDownloadFilelistIndex].originFileType;
 
-    downlaodFrame.src = encodeURI(forDownloadUrl);
-    // encodeURI 참고 : https://jamesdreaming.tistory.com/2
-
+    downlaodFrame.src = encodeURI(forDownloadUrl); // encodeURI 참고 : https://jamesdreaming.tistory.com/2
 
     // setInterval(타겟함수,설정시간) 함수는 주기적으로 인자를 실행하는 함수
     // 일정한 시간 간격으로 작업을 수행하기 위해서 사용
     // clearInterval 함수를 사용하여 중지
     // 지정된 작업은 모두 실행되고 다음 작업 스케쥴이 중지
-    setInterval(function(){
-        checkDownProgress(downFileGuid)
-    }, 200);  // 1초 = 1000
+    const startInterval = setInterval(function(){
+        if(progressPercentage < 100){
+            checkDownProgress(downFileGuid);
+        }else if(progressPercentage == 100){
+            clearInterval(startInterval);
+        }
+    }, 100);  // ex) 1초 = 1000
 
     
 
@@ -546,7 +567,7 @@ function startDownload(forDownloadFilelistIndex){
     
     //alert("forDownloadFilelist.length : " + forDownloadFilelist.length)
 
-    startIframRequest(2, forDownloadFilelist);
+    startIframRequest(forDownloadFilelist, 2);
 }
 
 
