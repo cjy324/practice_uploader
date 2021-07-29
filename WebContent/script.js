@@ -15,7 +15,7 @@ const uploadedZone = document.getElementById("uploadedZone");
 
 
 // fileList를 담을 배열 객체 생성(전역변수)
-let newFileList = [];  // 임시 리스트(화면에 그리기 용)
+let globalFileList = [];  // 임시 리스트(화면에 그리기 용)
 let forUploadFileList = [];  // 실제 업로드될 리스트(실제 선택된 파일들을 담을)
 const forUploadFileListIndex = 0;
 
@@ -35,6 +35,7 @@ function showFiles(files) {
     let fileListLi = "";	// dropZone에 drop한 파일별 태그 생성
     
     for(let i = 0; i < files.length; i++) {
+        console.log(files[i]);
         fileListLi += "<li>";
         fileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' value='false' name='uploadFiles' checked>";
         fileListLi += "<span>" + files[i].name + "</span>";
@@ -73,10 +74,10 @@ function showFiles(files) {
 // 파일 업로드를 위한 데이터 셋팅(from Input)
 function setUploadFiles(e){
     // Input으로부터 파일 배열 가져오기
-    newFileList = e.target.files;
-    // console.log(newFileList);
+    globalFileList = e.target.files;
+    // console.log(globalFileList);
     // input에 파일이 들어오면 dropZone에 업로드 될 파일리스트 그리기
-    showFiles(newFileList);
+    showFiles(globalFileList);
 }
 
 // 드래그한 파일이 최초로 uploadZone에 진입했을 때
@@ -108,7 +109,7 @@ uploadZone.addEventListener("drop", function(e) {
             return;
         }
         // uploadZone에 드랍된 파일들로 파일리스트 세팅
-        newFileList = droppedFiles;
+        globalFileList = droppedFiles;
         showFiles(droppedFiles);
     } else {
         alert("ERROR");
@@ -144,8 +145,8 @@ function removeSelectedFiles(){
 
     // FileList 객체는 Array 객체가 아니므로 splice()함수를 쓸 수 없음
     // 따라서 splice()를 사용하기 위해 임시로 FileList를 Array로 담아서 진행
-    for(let x = 0; x < newFileList.length; x++){
-        tempArray.push(newFileList[x]);
+    for(let x = 0; x < globalFileList.length; x++){
+        tempArray.push(globalFileList[x]);
     }
 
     // 배열 내 체크된 파일요소 내용 삭제
@@ -171,14 +172,14 @@ function removeSelectedFiles(){
     }
 
     // 다시 원래대로 담기
-    newFileList = tempArray;
+    globalFileList = tempArray;
     
     if(removeTargetIndex == -1){
         alert("선택된 파일이 없습니다.");
         return;
     }
     
-    showFiles(newFileList);
+    showFiles(globalFileList);
 }
 
 // 전체 파일 선택하기
@@ -199,15 +200,15 @@ function setUploadFileList(){
     //     if(uploadFiles[i].checked){  // 체크된 파일만 필터링
     //         uploadTargetIndex = Number(uploadFiles[i].id.split("_")[2]);
     //         // 체크된 파일 index와 downloadFilelist의 파일 index가 일치하면 다운로드용 리스트에 새로 담기
-    //         for(let k = 0; k < newFileList.length; k++){
+    //         for(let k = 0; k < globalFileList.length; k++){
     //             if(uploadTargetIndex == k){
-    //                 forUploadFileList.push(newFileList[k]);
+    //                 forUploadFileList.push(globalFileList[k]);
     //             }
     //         }
     //     }
     // }
 
-    forUploadFileList = newFileList;
+    forUploadFileList = globalFileList;
 
     if(forUploadFileList.length == 0){
         alert("선택된 파일이 없습니다.")
@@ -240,6 +241,13 @@ function drawUploadedFileList(uploadedFileList){
         uploadZoneMessage += "</li>";
     
     uploadZone.innerHTML = uploadZoneMessage; 
+
+    let resetFileListInfo = "";
+        resetFileListInfo += "<span>0</span>개 , ";
+        resetFileListInfo += "<span>0 byte </span>";
+        resetFileListInfo += "<span>추가됨</span>";
+
+    infoZone.innerHTML = resetFileListInfo;
 }
 
 // GUID 생성 함수
@@ -344,7 +352,7 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadF
             // 3=interactive 요청 처리 중 상태
             // 4=complete 요청 완료되고 응답 준비된 상태
             if(req.status === 200 && indicator == true) {
-                console.log("indicator33333333: " + indicator);
+                // console.log("indicator33333333: " + indicator);
                 
                 if(slicedFileIndex < slicedFiles.length-1){ // 만약, index가 slicedFiles.length 보다 작으면
                     slicedFileIndex++; // index 1 증가
@@ -413,7 +421,7 @@ function startUpload(forUploadFileListIndex){
             // 각 분할 횟수별 분할 시작 포인트 설정
             const startPoint = limitSize * f;
             // slice(시작점, 자를점, Type)로 파일 분할
-            const slicedFile = newFileList[forUploadFileListIndex].slice(startPoint, startPoint + limitSize, forUploadFileList[forUploadFileListIndex].type);
+            const slicedFile = globalFileList[forUploadFileListIndex].slice(startPoint, startPoint + limitSize, forUploadFileList[forUploadFileListIndex].type);
             // 분할된 파일 slicedFiles 배열 객체에 담기
             slicedFiles.push(slicedFile);
         }
@@ -452,7 +460,7 @@ function startUpload(forUploadFileListIndex){
     
         /* 로컬스토리지에 저장된 기존 업로드 중단된 파일 정보들 확인 시작 */
         // Key: "resume_upload_" + guid
-        // Vlaue: guid + "__" + slicedFileIndex + "__" + newFileList[forUploadFileListIndex].name + "__" + newFileList[forUploadFileListIndex].size
+        // Vlaue: guid + "__" + slicedFileIndex + "__" + globalFileList[forUploadFileListIndex].name + "__" + globalFileList[forUploadFileListIndex].size
         // 구분자: __
         let canceledFileName;
         let canceledFileSize;
@@ -519,19 +527,19 @@ const progressBar_down = document.getElementById("progressBar_down");
 const allFilesMessage_down = document.getElementById("allFilesMessage_down");
 const message_down = document.getElementById("message_down");
 
-// 다운로드 파일 정보를 담아놓을 전역변수
-let downloadFilelist = [];
+
+// let globalFileList = []; // 다운로드 파일 정보를 담아놓을 전역변수(삭제)
 let forDownloadFilelistIndex = 0;
 
 // downloadZone에 그리기
-function drawDownloadFileList(downloadFilelist){
+function drawDownloadFileList(globalFileList){
     let forDownloadFileListLi = "";	// uploadedZone에 upload한 파일별 태그 생성
     
-    for(let i = 0; i < downloadFilelist.length; i++) {
+    for(let i = 0; i < globalFileList.length; i++) {
         forDownloadFileListLi += "<li>";
         forDownloadFileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' name='downFiles' value='false' checked>";
-        forDownloadFileListLi += "<span>" + downloadFilelist[i].originFileName + "</span>";
-        forDownloadFileListLi += "<span> " + downloadFilelist[i].originFileSize + " Byte</span>";
+        forDownloadFileListLi += "<span>" + globalFileList[i].name + "</span>";
+        forDownloadFileListLi += "<span> " + globalFileList[i].size + " Byte</span>";
         forDownloadFileListLi += "</li>";
     }
 
@@ -543,33 +551,44 @@ function drawDownloadFileList(downloadFilelist){
 // 파일 정보를 가져와서 전역변수에 담아놓기
 function fileLoad(){
     // DB로부터 아래 형식으로 파일 정보를 받아왔다고 가정
-
     const file1 = {
-        originFileName: "test1.zip",
-        originFileSize: "3432864",
-        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\test1.zip",
-        originFileType: "application/zip"
+        lastModified: 1580961046732,
+        lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
+        name: "test1.zip",
+        size: 3432864,
+        path: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\test1.zip",
+        type: "application/zip"
     };
+
+    var file = new File(['test1'],
+                     'test1.zip', 
+                     {type:'application/zip'});
     const file2 = {
-        originFileName: "테스트이미지.jpg",
-        originFileSize: "14856",
-        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지.jpg",
-        originFileType: "image/jpeg"
+        lastModified: 1580961046732,
+        lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
+        name: "테스트이미지.jpg",
+        size: 14856,
+        path: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지.jpg",
+        type: "image/jpeg"
     };
     const file3 = {
-        originFileName: "테스트영상.mp4",
-        originFileSize: "73061740",
-        originFilePath: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트영상.mp4",
-        originFileType: "video/mp4"
+        lastModified: 1580961046732,
+        lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
+        name: "테스트영상.mp4",
+        size: 73061740,
+        path: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트영상.mp4",
+        type: "video/mp4"
     };
 
+
     // 전역변수 배열에 담기
-    downloadFilelist.push(file1);
-    downloadFilelist.push(file2);
-    downloadFilelist.push(file3);
+    globalFileList.push(file);
+    globalFileList.push(file);
+    globalFileList.push(file);
 
     // forDownloadFilelist에 담긴 파일 정보로 태그 그리기
-    drawDownloadFileList(downloadFilelist);
+    drawDownloadFileList(globalFileList);
+    showFiles(globalFileList);
 }
 
 // 다운로드 진행률
@@ -632,10 +651,10 @@ function startIframRequest(forDownloadFilelist, forDownloadFilelistIndex){
 
     forDownloadUrl += "index=" + forDownloadFilelistIndex;
     forDownloadUrl += "&guid=" + downFileGuid;
-    forDownloadUrl += "&originName=" + forDownloadFilelist[forDownloadFilelistIndex].originFileName;
-    forDownloadUrl += "&originSize=" + forDownloadFilelist[forDownloadFilelistIndex].originFileSize;
-    forDownloadUrl += "&originPath=" + forDownloadFilelist[forDownloadFilelistIndex].originFilePath;
-    forDownloadUrl += "&originType=" + forDownloadFilelist[forDownloadFilelistIndex].originFileType;
+    forDownloadUrl += "&originName=" + forDownloadFilelist[forDownloadFilelistIndex].name;
+    forDownloadUrl += "&originSize=" + forDownloadFilelist[forDownloadFilelistIndex].size;
+    forDownloadUrl += "&originPath=" + forDownloadFilelist[forDownloadFilelistIndex].path;
+    forDownloadUrl += "&originType=" + forDownloadFilelist[forDownloadFilelistIndex].type;
 
     downlaodFrame.src = encodeURI(forDownloadUrl); // encodeURI 참고 : https://jamesdreaming.tistory.com/2
 
@@ -668,9 +687,9 @@ function startDownload(forDownloadFilelistIndex){
         if(downFiles[i].checked){  // 체크된 파일만 필터링
             downloadTargetIndex = Number(downFiles[i].id.split("_")[2]);
             // 체크된 파일 index와 downloadFilelist의 파일 index가 일치하면 다운로드용 리스트에 새로 담기
-            for(let k = 0; k < downloadFilelist.length; k++){
+            for(let k = 0; k < globalFileList.length; k++){
                 if(downloadTargetIndex == k){
-                    forDownloadFilelist.push(downloadFilelist[k]);
+                    forDownloadFilelist.push(globalFileList[k]);
                 }
             }
         }
