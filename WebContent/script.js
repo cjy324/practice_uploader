@@ -58,6 +58,16 @@ function showFiles(files) {
         fileListInfo += "<span>추가됨</span>";
 
     infoZone.innerHTML = fileListInfo;
+
+    if(files.length == 0){
+        let uploadZoneMessage = "";
+        uploadZoneMessage += "<li style='height:100%; justify-content: center; align-items: center;'>";
+        uploadZoneMessage += "<span style='font-weight: normal; color: blue; font-size: 12px;'>이곳에 파일을 Drag & Drop 하세요.</span>";
+        uploadZoneMessage += "</li>";
+        
+        uploadZone.innerHTML = uploadZoneMessage; 
+    }
+    
 }
 
 // 파일 업로드를 위한 데이터 셋팅(from Input)
@@ -105,22 +115,100 @@ uploadZone.addEventListener("drop", function(e) {
     }
 })
 
-// 선택된 업로드 파일 담기
-function setUploadFileList(){
-    // 선택 파일만 담기
-    let uploadTargetIndex = -1;
+// 전체 선택/해제
+function setAllCheckbox(){
+    if(uploadFiles.length > 0){
+        const allCheckbox = document.getElementById("allCheckbox");
+        if(allCheckbox.checked){
+            for(let i = 0; i < uploadFiles.length; i++){
+                uploadFiles[i].checked = true;
+            }
+        }else{
+            for(let i = 0; i < uploadFiles.length; i++){
+                uploadFiles[i].checked = false;
+            }
+        }
+    }  
+}
 
+// 선택된 파일 삭제
+function removeSelectedFiles(){
+
+    if(confirm("정말 삭제하시겠습니까?") == false){
+        return;
+    }
+
+    // 선택 파일만 담기
+    let removeTargetIndex = -1;
+    let tempArray = [];  
+
+    // FileList 객체는 Array 객체가 아니므로 splice()함수를 쓸 수 없음
+    // 따라서 splice()를 사용하기 위해 임시로 FileList를 Array로 담아서 진행
+    for(let x = 0; x < newFileList.length; x++){
+        tempArray.push(newFileList[x]);
+    }
+
+    // 배열 내 체크된 파일요소 내용 삭제
     for(let i = 0; i < uploadFiles.length; i++){
         if(uploadFiles[i].checked){  // 체크된 파일만 필터링
-            uploadTargetIndex = Number(uploadFiles[i].id.split("_")[2]);
-            // 체크된 파일 index와 downloadFilelist의 파일 index가 일치하면 다운로드용 리스트에 새로 담기
-            for(let k = 0; k < newFileList.length; k++){
-                if(uploadTargetIndex == k){
-                    forUploadFileList.push(newFileList[k]);
+            removeTargetIndex = Number(uploadFiles[i].id.split("_")[2]);
+            // 체크된 파일 index와 newFileList의 index가 일치하면 
+            for(let k = 0; k < tempArray.length; k++){
+                if(removeTargetIndex == k){
+                    delete tempArray[k] // newFileList의 index가 removeTargetIndex인 요소 삭제
+                    console.log(k + " file delete")
                 }
             }
         }
     }
+
+    // 배열 내 비어있는 요소 삭제
+    for(let y = 0; y < tempArray.length; y++){
+        if(tempArray[y] === undefined){
+            tempArray.splice(y, 1);
+            y--;
+        }
+    }
+
+    // 다시 원래대로 담기
+    newFileList = tempArray;
+    
+    if(removeTargetIndex == -1){
+        alert("선택된 파일이 없습니다.");
+        return;
+    }
+    
+    showFiles(newFileList);
+}
+
+// 전체 파일 선택하기
+function selectAllFilesAndRemove(){
+    for(let i = 0; i < uploadFiles.length; i++){
+        uploadFiles[i].checked = true;
+    }
+    removeSelectedFiles();
+}
+
+// 선택된 업로드 파일 담기
+function setUploadFileList(){
+    // // 21.07.29 삭제
+    // // 선택 파일만 담기
+    // let uploadTargetIndex = -1;
+    
+    // for(let i = 0; i < uploadFiles.length; i++){
+    //     if(uploadFiles[i].checked){  // 체크된 파일만 필터링
+    //         uploadTargetIndex = Number(uploadFiles[i].id.split("_")[2]);
+    //         // 체크된 파일 index와 downloadFilelist의 파일 index가 일치하면 다운로드용 리스트에 새로 담기
+    //         for(let k = 0; k < newFileList.length; k++){
+    //             if(uploadTargetIndex == k){
+    //                 forUploadFileList.push(newFileList[k]);
+    //             }
+    //         }
+    //     }
+    // }
+
+    forUploadFileList = newFileList;
+
     if(forUploadFileList.length == 0){
         alert("선택된 파일이 없습니다.")
         return;
@@ -129,24 +217,29 @@ function setUploadFileList(){
     }
 }
 
-// 업로드된 파일 리스트 그리기
+// 업로드 후 파일리스트 리셋
 function drawUploadedFileList(uploadedFileList){
-    let uploadedFileListLi = "";	// uploadedZone에 upload한 파일별 태그 생성
+    // // 21.07.29 임시 삭제
+    // 업로드된 파일리스트 그리기
+    // let uploadedFileListLi = "";	// uploadedZone에 upload한 파일별 태그 생성
     
-    for(let i = 0; i < uploadedFileList.length; i++) {
-        uploadedFileListLi += "<li>";
-        uploadedFileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' value='false' checked>";
-        uploadedFileListLi += "<span>" + uploadedFileList[i].name + "</span>";
-        uploadedFileListLi += "<span> " + uploadedFileList[i].size + " Byte</span>";
-        uploadedFileListLi += "</li>";
-    }
+    // for(let i = 0; i < uploadedFileList.length; i++) {
+    //     uploadedFileListLi += "<li>";
+    //     uploadedFileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' value='false' checked>";
+    //     uploadedFileListLi += "<span>" + uploadedFileList[i].name + "</span>";
+    //     uploadedFileListLi += "<span> " + uploadedFileList[i].size + " Byte</span>";
+    //     uploadedFileListLi += "</li>";
+    // }
+
+    // uploadedZone.innerHTML = uploadedFileListLi;
+
+    // 업로드 대기 파일리스트 초기화
     let uploadZoneMessage = "";
         uploadZoneMessage += "<li style='height:100%; justify-content: center; align-items: center;'>";
         uploadZoneMessage += "<span style='font-weight: normal; color: blue; font-size: 12px;'>이곳에 파일을 Drag & Drop 하세요.</span>";
         uploadZoneMessage += "</li>";
     
-    uploadZone.innerHTML = uploadZoneMessage; // 업로드 대기 파일리스트 초기화
-    uploadedZone.innerHTML = uploadedFileListLi;
+    uploadZone.innerHTML = uploadZoneMessage; 
 }
 
 // GUID 생성 함수
@@ -264,6 +357,7 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadF
                     startUpload(forUploadFileListIndex);
                 }else{
                     console.log(forUploadFileList[forUploadFileListIndex].name + " file" + "업로드 - 종료")
+                    // 21.07.29 임시 삭제
                     drawUploadedFileList(forUploadFileList);
                 }              
                 // console.log(xhttp.responseText)

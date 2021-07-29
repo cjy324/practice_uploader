@@ -11,7 +11,7 @@
 	let testVal = 10000;
 </script>
 </head>
-<body>
+<body onload="fileLoad()">
 	<section class="main_section">
 		<!-- UPLOADER -->
         <div class="title_bar">
@@ -32,7 +32,7 @@
         </div>
         <div class="uploader_body">
             <div id="top_area" class="top_area">
-                <input type="checkbox" checked="checked">
+                <input id="allCheckbox" type="checkbox" checked="checked" onchange="setAllCheckbox()">
                 <div>파일 이름</div>
                 <div>파일 크기</div>
             </div>
@@ -75,18 +75,25 @@
                                 <button type="button" id="button_cancel" onclick="cancelUpload()">
                             		<span>업로드 중단</span>
                             	</button>
+                            	<button type="button" id="button_remove" onclick="removeSelectedFiles()">
+                            		<span>선택 파일 삭제</span>
+                            	</button>
+                            	<button type="button" id="button_removeAll" onclick="selectAllFilesAndRemove()">
+                            		<span>전체 파일 삭제</span>
+                            	</button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="title_bar">
+        <!-- 21.07.29 임시 삭제 -->
+        <!-- <div class="title_bar">
             <h5>UPLOADED FILE LIST</h5>
         </div>
  		<div id="uploaded_body" class="uploaded_body">
     		<ul id="uploadedZone" class="uploadedZone"></ul>
-    	</div>
+    	</div> -->
     	
     	
     	<!-- DOWNLOADER -->
@@ -118,9 +125,6 @@
                     <tbody>
                         <tr>
                             <td>
-                            	<button id="button_load" type="button" onclick="fileLoad()">
-                            		<span>파일추가</span>
-                            	</button>
                             	<button id="button_down" type="button" onclick="startDownload(0)">
                             		<span>다운로드</span>
                             	</button>
@@ -141,6 +145,7 @@
 	        <p id="message_down"></p>
         </div>
         <iframe id="download_frame" name="download_frame" style="display: none;" src=""></iframe>
+        
     </section>
 </body>
 </html>
