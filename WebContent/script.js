@@ -14,15 +14,16 @@ const message = document.getElementById("message");
 const uploadedZone = document.getElementById("uploadedZone");
 
 
-// fileList를 담을 배열 객체 생성(전역변수)
-let globalFileList = [];  // 임시 리스트(화면에 그리기 용)
-let forUploadFileList = [];  // 실제 업로드될 리스트(실제 선택된 파일들을 담을)
-const forUploadFileListIndex = 0;
-
-// ajax 통신을 하기 위한 XmlHttpRequest 객체 생성
-const xhttp = new XMLHttpRequest();
+/* ----- 주요 전역 변수 모음 ----- */
+let globalFileList = [];  // 업로드/다운로드 fileList를 담을 배열
+const xhttp = new XMLHttpRequest(); // ajax 통신을 하기 위한 XmlHttpRequest 객체 생성
 // ajax 통신이 중단됐는지 여부를 알 수 있는 indicator 변수 선언
 let indicator = false; // 기본값 false
+/* ----- 주요 전역 변수 모음 ----- */
+
+let forUploadFileList = [];  // 실제 업로드될 리스트(실제 선택된 파일들을 담을)
+let forUploadFileListIndex = 0;  // 업로드를 위한 파일 인덱스
+let forDeleteFileList = [];  // 수정모드에서 기존 업로드되었던 파일을 삭제할 경우 실제 파일도 삭제하기 위해 이 배열도 필요
 
 // 버튼으로 파일추가input 불러오기
 function selectFiles() {
@@ -73,8 +74,10 @@ function showFiles(files) {
 
 // 파일 업로드를 위한 데이터 셋팅(from Input)
 function setUploadFiles(e){
-    // Input으로부터 파일 배열 가져오기
-    globalFileList = e.target.files;
+    // Input으로부터 추가된 FileList를 기존 globalFileList에 추가
+    for(let i = 0; i < e.target.files.length; i++){
+        globalFileList.push(e.target.files[i]);
+    }
     // console.log(globalFileList);
     // input에 파일이 들어오면 dropZone에 업로드 될 파일리스트 그리기
     showFiles(globalFileList);
@@ -109,8 +112,10 @@ uploadZone.addEventListener("drop", function(e) {
             return;
         }
         // uploadZone에 드랍된 파일들로 파일리스트 세팅
-        globalFileList = droppedFiles;
-        showFiles(droppedFiles);
+        for(let i = 0; i < droppedFiles.length; i++){
+            globalFileList.push(droppedFiles[i]);
+        }
+        showFiles(globalFileList);
     } else {
         alert("ERROR");
     }
@@ -139,7 +144,6 @@ function removeSelectedFiles(){
         return;
     }
 
-    // 선택 파일만 담기
     let removeTargetIndex = -1;
     let tempArray = [];  
 
@@ -149,21 +153,25 @@ function removeSelectedFiles(){
         tempArray.push(globalFileList[x]);
     }
 
-    // 배열 내 체크된 파일요소 내용 삭제
+    // tempArray 내 체크된 파일 원소의 내용만 삭제(빈 공간만 남음, index는 유지됨)
     for(let i = 0; i < uploadFiles.length; i++){
         if(uploadFiles[i].checked){  // 체크된 파일만 필터링
             removeTargetIndex = Number(uploadFiles[i].id.split("_")[2]);
-            // 체크된 파일 index와 newFileList의 index가 일치하면 
+            
             for(let k = 0; k < tempArray.length; k++){
-                if(removeTargetIndex == k){
-                    delete tempArray[k] // newFileList의 index가 removeTargetIndex인 요소 삭제
+                if(removeTargetIndex == k){  // 체크된 파일 index와 tempArray의 index가 일치하면.....
+                    if(tempArray[k].uploaded === true){  // 1. 기존 업로드됐던 파일인 경우 실제 파일도 삭제하기 위해 forDeleteFileList에 정보 담아두기
+                        forDeleteFileList.push(tempArray[k]);  
+                        console.log(k + " file pushed to 'forDeleteFileList'");
+                    }
+                    delete tempArray[k]; // 2. tempArray의 index가 removeTargetIndex인 원소의 내용 삭제(빈 공간만 남음)
                     console.log(k + " file delete")
                 }
             }
         }
     }
 
-    // 배열 내 비어있는 요소 삭제
+    // tempArray 내 비어있는 요소 삭제(공간까지 삭제, index가 순차적으로 변경됨)
     for(let y = 0; y < tempArray.length; y++){
         if(tempArray[y] === undefined){
             tempArray.splice(y, 1);
@@ -171,9 +179,11 @@ function removeSelectedFiles(){
         }
     }
 
-    // 다시 원래대로 담기
+    // 다시 원래대로 FileLiet 객체 형태로 담기
     globalFileList = tempArray;
-    
+
+    // 만약, removeTargetIndex가 여전히 -1이면, 
+    // 즉, 선택된 파일이 없으면...
     if(removeTargetIndex == -1){
         alert("선택된 파일이 없습니다.");
         return;
@@ -190,27 +200,19 @@ function selectAllFilesAndRemove(){
     removeSelectedFiles();
 }
 
-// 선택된 업로드 파일 담기
+// 선택된 업로드 파일 담기("전송하기" 버튼 클릭)
 function setUploadFileList(){
-    // // 21.07.29 삭제
-    // // 선택 파일만 담기
-    // let uploadTargetIndex = -1;
-    
-    // for(let i = 0; i < uploadFiles.length; i++){
-    //     if(uploadFiles[i].checked){  // 체크된 파일만 필터링
-    //         uploadTargetIndex = Number(uploadFiles[i].id.split("_")[2]);
-    //         // 체크된 파일 index와 downloadFilelist의 파일 index가 일치하면 다운로드용 리스트에 새로 담기
-    //         for(let k = 0; k < globalFileList.length; k++){
-    //             if(uploadTargetIndex == k){
-    //                 forUploadFileList.push(globalFileList[k]);
-    //             }
-    //         }
-    //     }
-    // }
+    // 새로 업로드될 파일리스트만 forUploadFileList에 담기
+    for(let i = 0; i < globalFileList.length; i++){
+        if(globalFileList[i].uploaded === undefined){
+            forUploadFileList.push(globalFileList[i])
+        }
+    }
 
-    forUploadFileList = globalFileList;
-
-    if(forUploadFileList.length == 0){
+    if(globalFileList.length > 0 && forUploadFileList == 0){
+        alert("새로 업로드될 파일이 없습니다.")
+        return;
+    }else if(forUploadFileList.length == 0){
         alert("선택된 파일이 없습니다.")
         return;
     }else{
@@ -218,23 +220,9 @@ function setUploadFileList(){
     }
 }
 
-// 업로드 후 파일리스트 리셋
-function drawUploadedFileList(uploadedFileList){
-    // // 21.07.29 임시 삭제
-    // 업로드된 파일리스트 그리기
-    // let uploadedFileListLi = "";	// uploadedZone에 upload한 파일별 태그 생성
-    
-    // for(let i = 0; i < uploadedFileList.length; i++) {
-    //     uploadedFileListLi += "<li>";
-    //     uploadedFileListLi += "<input id='chk_file_" + [i] + "' type='checkbox' value='false' checked>";
-    //     uploadedFileListLi += "<span>" + uploadedFileList[i].name + "</span>";
-    //     uploadedFileListLi += "<span> " + uploadedFileList[i].size + " Byte</span>";
-    //     uploadedFileListLi += "</li>";
-    // }
+// 업로드 후 대기 파일리스트 리셋
+function drawUploadedFileList(){
 
-    // uploadedZone.innerHTML = uploadedFileListLi;
-
-    // 업로드 대기 파일리스트 초기화
     let uploadZoneMessage = "";
         uploadZoneMessage += "<li style='height:100%; justify-content: center; align-items: center;'>";
         uploadZoneMessage += "<span style='font-weight: normal; color: blue; font-size: 12px;'>이곳에 파일을 Drag & Drop 하세요.</span>";
@@ -365,8 +353,7 @@ function startAjax(xhttp, slicedFiles, slicedFileIndex, guid, params, forUploadF
                     startUpload(forUploadFileListIndex);
                 }else{
                     console.log(forUploadFileList[forUploadFileListIndex].name + " file" + "업로드 - 종료")
-                    // 21.07.29 임시 삭제
-                    drawUploadedFileList(forUploadFileList);
+                    drawUploadedFileList(); // 업로드 후 대기 파일리스트 리셋
                 }              
                 // console.log(xhttp.responseText)
             }else if(req.status === 200 && indicator == false && slicedFileIndex < slicedFiles.length-1){
@@ -421,7 +408,7 @@ function startUpload(forUploadFileListIndex){
             // 각 분할 횟수별 분할 시작 포인트 설정
             const startPoint = limitSize * f;
             // slice(시작점, 자를점, Type)로 파일 분할
-            const slicedFile = globalFileList[forUploadFileListIndex].slice(startPoint, startPoint + limitSize, forUploadFileList[forUploadFileListIndex].type);
+            const slicedFile = forUploadFileList[forUploadFileListIndex].slice(startPoint, startPoint + limitSize, forUploadFileList[forUploadFileListIndex].type);
             // 분할된 파일 slicedFiles 배열 객체에 담기
             slicedFiles.push(slicedFile);
         }
@@ -552,28 +539,28 @@ function drawDownloadFileList(globalFileList){
 function fileLoad(){
     // DB로부터 아래 형식으로 파일 정보를 받아왔다고 가정
     const file1 = {
-        lastModified: 1580961046732,
-        lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
+        uploaded: true,
+        // lastModified: 1580961046732,
+        // lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
         name: "test1.zip",
         size: 3432864,
         path: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\test1.zip",
         type: "application/zip"
     };
 
-    var file = new File(['test1'],
-                     'test1.zip', 
-                     {type:'application/zip'});
     const file2 = {
-        lastModified: 1580961046732,
-        lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
+        uploaded: true,
+        // lastModified: 1580961046732,
+        // lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
         name: "테스트이미지.jpg",
         size: 14856,
         path: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트이미지.jpg",
         type: "image/jpeg"
     };
     const file3 = {
-        lastModified: 1580961046732,
-        lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
+        uploaded: true,
+        // lastModified: 1580961046732,
+        // lastModifiedDate: 'Thu Feb 06 2020 12:50:46 GMT+0900 (대한민국 표준시) {}',
         name: "테스트영상.mp4",
         size: 73061740,
         path: "D:\\eclipse-workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\Uploader\\upload\\테스트영상.mp4",
@@ -582,12 +569,13 @@ function fileLoad(){
 
 
     // 전역변수 배열에 담기
-    globalFileList.push(file);
-    globalFileList.push(file);
-    globalFileList.push(file);
-
+    globalFileList.push(file1);
+    globalFileList.push(file2);
+    globalFileList.push(file3);
     // forDownloadFilelist에 담긴 파일 정보로 태그 그리기
     drawDownloadFileList(globalFileList);
+
+    // 수정모드
     showFiles(globalFileList);
 }
 
@@ -681,7 +669,7 @@ function startIframRequest(forDownloadFilelist, forDownloadFilelistIndex){
 function startDownload(forDownloadFilelistIndex){
 
     let downloadTargetIndex = -1;
-    let forDownloadFilelist = [];
+    let forDownloadFilelist = []; // 실제 다운로드를 진행할 파일들의 정보를 담을 리스트
 
     for(let i = 0; i < downFiles.length; i++){
         if(downFiles[i].checked){  // 체크된 파일만 필터링

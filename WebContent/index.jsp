@@ -70,16 +70,16 @@
                             		<span>파일추가</span>
                             	</button>
                             	<button type="button" id="button_send" onclick="setUploadFileList()">
-                            		<span>전송하기</span>
+                            		<span>업로드</span>
                             	</button>
                                 <button type="button" id="button_cancel" onclick="cancelUpload()">
                             		<span>업로드 중단</span>
                             	</button>
                             	<button type="button" id="button_remove" onclick="removeSelectedFiles()">
-                            		<span>선택 파일 삭제</span>
+                            		<span>선택 삭제</span>
                             	</button>
                             	<button type="button" id="button_removeAll" onclick="selectAllFilesAndRemove()">
-                            		<span>전체 파일 삭제</span>
+                            		<span>전체 삭제</span>
                             	</button>
                             </td>
                         </tr>
@@ -205,16 +205,16 @@
                             		<span>파일추가</span>
                             	</button>
                             	<button type="button" id="button_send" onclick="setUploadFileList()">
-                            		<span>전송하기</span>
+                            		<span>업로드</span>
                             	</button>
                                 <button type="button" id="button_cancel" onclick="cancelUpload()">
                             		<span>업로드 중단</span>
                             	</button>
                             	<button type="button" id="button_remove" onclick="removeSelectedFiles()">
-                            		<span>선택 파일 삭제</span>
+                            		<span>선택 삭제</span>
                             	</button>
                             	<button type="button" id="button_removeAll" onclick="selectAllFilesAndRemove()">
-                            		<span>전체 파일 삭제</span>
+                            		<span>전체 삭제</span>
                             	</button>
                             </td>
                         </tr>
